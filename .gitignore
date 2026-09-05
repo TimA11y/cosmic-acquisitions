@@ -1,0 +1,6 @@
+# Dev tooling dependencies (Node.js/npm) — not part of the shipped vanilla JS/HTML/CSS app
+node_modules/
+
+# Playwright test artifacts
+test-results/
+playwright-report/
