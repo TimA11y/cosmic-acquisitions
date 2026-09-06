@@ -1,10 +1,10 @@
-# Project X — working title
+# Cosmic Acquisitions
 
 A turn-based, space-themed variant of Sid Sackson's board game *Acquire*, playable in a browser against AI opponents.
 
 ## What this is
 
-The player takes tiles representing sectors of space and places them on a shared map, founding, growing, and merging space-faring factions (a reskin of Acquire's hotel chains). Players buy stock in factions, and when factions merge, majority/minority shareholders cash out. The game is turn-based: one human player competes against one or more AI-controlled players.
+The player places sector tiles on a shared Star Map, founding, growing, and merging space corporations (a reskin of Acquire's hotel chains). Players buy shares in corporations, and when corporations merge, majority/minority shareholders cash out in Credits. The game is turn-based: one human player competes against one or more AI-controlled players.
 
 This document is a living overview of the project. See [requirements.md](requirements.md) for the detailed, itemized requirements list.
 
@@ -51,6 +51,7 @@ projectx/
 - [docs/help-design.md](docs/help-design.md) — "How to Play" reference dialog and phase-specific contextual hints
 - [docs/file-layout.md](docs/file-layout.md) — `js/model/` file split, dependency direction, and BDD testing implications
 - [docs/persistence-design.md](docs/persistence-design.md) — save/resume via `localStorage`, save points, and `Map`/`Set` serialization
+- [docs/visual-design.md](docs/visual-design.md) — neon cyberpunk visual direction, palette roles, typography, motion/flashing constraints
 
 ## Key design constraints
 

@@ -1,6 +1,6 @@
 # Requirements
 
-Itemized requirements for Project X, gathered during requirements discussions. This file is updated as new requirements are added or existing ones are clarified. Each item notes the date it was established.
+Itemized requirements for Cosmic Acquisitions, gathered during requirements discussions. This file is updated as new requirements are added or existing ones are clarified. Each item notes the date it was established.
 
 ## Game concept
 
@@ -90,6 +90,14 @@ Both a full "How to Play" reference (a scrollable `<dialog>`, always reachable f
 
 Full game persistence to a single `localStorage` slot, auto-saved at the end of every turn. See `docs/persistence-design.md`.
 
+## Visual design (confirmed 2026-09-05)
+
+Neon cyberpunk direction: near-black background, near-white body text, tier-based neon accent colors (cyan/magenta/yellow for economy/standard/luxury), angular sans-serif type, with hard constraints against seizure-risk flashing and a `prefers-reduced-motion` requirement for glow/glitch effects. See `docs/visual-design.md`. Exact hex values and typeface are still open, pending contrast verification during implementation.
+
+## Project title (confirmed 2026-09-05)
+
+**Cosmic Acquisitions.**
+
 ## Open / not yet decided
 
-- Visual style/art direction.
+- Exact palette hex values and typeface (pending WCAG contrast verification).

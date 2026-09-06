@@ -1,6 +1,6 @@
 # Data model
 
-This describes the core game-state shape for Project X. It's plain JS data (objects, arrays, Maps, Sets) plus **pure functions** that read and return state — no classes, no framework, matching the vanilla-JS requirement (see `requirements.md` R3). Pure functions (taking state in, returning new/updated state out, no hidden dependencies) make the model straightforward to test with BDD scenarios independent of any UI or DOM.
+This describes the core game-state shape for Cosmic Acquisitions. It's plain JS data (objects, arrays, Maps, Sets) plus **pure functions** that read and return state — no classes, no framework, matching the vanilla-JS requirement (see `requirements.md` R3). Pure functions (taking state in, returning new/updated state out, no hidden dependencies) make the model straightforward to test with BDD scenarios independent of any UI or DOM.
 
 ## Sector coordinates
 

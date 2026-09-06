@@ -1,6 +1,6 @@
 # AI design
 
-This describes how AI-controlled players work in Project X, built entirely in vanilla JS (R3) — no AI/game-tree libraries, since a generic library would only provide the tree-search bookkeeping while all the game-specific logic (legal moves, hidden-hand handling, evaluation) still has to be written by us regardless.
+This describes how AI-controlled players work in Cosmic Acquisitions, built entirely in vanilla JS (R3) — no AI/game-tree libraries, since a generic library would only provide the tree-search bookkeeping while all the game-specific logic (legal moves, hidden-hand handling, evaluation) still has to be written by us regardless.
 
 ## Setup
 

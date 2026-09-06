@@ -1,6 +1,6 @@
 # UI design
 
-This describes the screen structure and interaction patterns for Project X, built to satisfy the accessibility and responsiveness requirements in `requirements.md` (R10–R15) using plain HTML/CSS/JS (no framework — R3).
+This describes the screen structure and interaction patterns for Cosmic Acquisitions, built to satisfy the accessibility and responsiveness requirements in `requirements.md` (R10–R15) using plain HTML/CSS/JS (no framework — R3).
 
 ## Landmark structure
 
@@ -65,10 +65,13 @@ Screen readers announce a cell's row/column headers automatically as the user na
 
 **At most 6 cells are ever interactive at once, and only at the start of a player's turn.** Only the sectors that correspond to a tile currently in the player's hand — and only before that player has placed anything this turn — are rendered as `<button>` elements inside their `<td>`; every other cell is plain content. This directly reflects the rule that each tile has exactly one legal destination (see the correction earlier in this doc's history): there are at most 6 places on the whole board a player could ever legally act on, so there's no need to make all 108 cells interactive, and once the turn's one placement is used, there's nothing left to act on there at all.
 
+Every occupied sector (placed, whether or not it's part of a corporation yet) shows a small **star glyph** — a decorative, thematic nod to "Star Map" — that is purely visual: it's `aria-hidden="true"` (or applied via CSS background/pseudo-element rather than real text content), so it's never read aloud on its own, and never the only signal of a cell's state.
+
 Cell states:
 
-- **Occupied, non-interactive cell**: shows the corporation's **initial letter as visible text** (not color alone — reuses the "all 7 corporations start with a different letter" property from the theme glossary, satisfies the WCAG rule against color-only information), with a visually-hidden span giving the full name for screen readers, e.g. visible `"N"`, accessible text `"part of Nova Traders"`.
-- **Empty, non-interactive, not in hand**: visually blank, accessible text `"empty"`.
+- **Occupied, unincorporated** (placed, not yet part of any corporation — the `analyzePlacement()` `"none"` outcome becomes permanent here): the star glyph rendered white/near-white (the primary text color from `docs/visual-design.md`, not a tier accent — it hasn't been claimed by anything yet), no letter. Accessible text: `"Sector 6-B, unincorporated"` (reusing the term already established in the placement-confirmation dialog copy).
+- **Occupied, part of a corporation**: the same star glyph, now recolored to that corporation's **tier accent color** (cyan/magenta/yellow per `docs/visual-design.md`), shown together with the corporation's **initial letter as visible text**, also in that tier color (not color alone — the letter reuses the "all 7 corporations start with a different letter" property from the theme glossary, satisfying the WCAG rule against color-only information). A visually-hidden span gives the full name for screen readers, e.g. visible `"N"` on a cyan star, accessible text `"part of Nova Traders"`.
+- **Empty, non-interactive, not in hand**: visually blank (no star — nothing has been placed here), accessible text `"empty"`.
 - **Empty, in hand, this turn's placement not yet made**: a `<button>`, accessible name e.g. `"Place Sector 6-B"`. Activating it opens the placement-confirmation dialog (see "Interaction model" below) rather than placing immediately.
 - **Empty, in hand, but this turn's placement already made elsewhere**: non-interactive (the button is removed, not disabled), with accessible text noting the player still holds it, e.g. `"Sector 9-F, empty. You have this sector in your hand."`
 
