@@ -78,6 +78,33 @@
       </section>
     </main>
 
+    <!--
+      Shown via showModal() on load, before any game exists — mandatory,
+      like the three decision dialogs below (no way to "cancel" starting a
+      game). js/ui/main.js only calls createGame() once this is submitted.
+    -->
+    <dialog id="setup-dialog">
+      <h2>New Game Setup</h2>
+      <div class="setup-field">
+        <label for="setup-player-count">Total players</label>
+        <select id="setup-player-count">
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+      <div class="setup-field">
+        <label for="setup-human-name">Your name</label>
+        <input type="text" id="setup-human-name" value="Player 1">
+      </div>
+      <div id="setup-ai-rows"></div>
+      <div class="dialog-actions">
+        <button id="setup-start-button" type="button">Start Game</button>
+      </div>
+    </dialog>
+
     <dialog id="placement-dialog">
       <p id="placement-dialog-message"></p>
       <div class="dialog-actions">

@@ -255,6 +255,43 @@ export function renderMarket(view, humanId, elements, callbacks) {
   }
 }
 
+/**
+ * Rebuilds the setup dialog's AI-opponent rows (one per AI player, i.e.
+ * `count - 1` of them) whenever the player-count select changes. Preserves
+ * any names/difficulties already entered for rows that still exist, rather
+ * than wiping the whole block back to defaults on every count change.
+ * Medium/Hard are shown (per docs/ai-design.md's confirmed 3-tier design)
+ * but disabled, since only js/ai/easy.js exists so far.
+ */
+export function renderSetupAiRows(count, containerEl) {
+  const aiCount = count - 1;
+  const existingValues = [...containerEl.querySelectorAll(".setup-ai-row")].map((row) => ({
+    name: row.querySelector(".setup-ai-name").value,
+    difficulty: row.querySelector(".setup-ai-difficulty").value,
+  }));
+
+  containerEl.innerHTML = "";
+  for (let i = 0; i < aiCount; i += 1) {
+    const previous = existingValues[i];
+    const row = document.createElement("div");
+    row.className = "setup-ai-row";
+    row.innerHTML = `
+      <label>AI opponent ${i + 1} name
+        <input type="text" class="setup-ai-name" value="${previous ? previous.name : `AI Opponent ${i + 1}`}">
+      </label>
+      <label>Difficulty
+        <select class="setup-ai-difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" disabled title="Not implemented yet">Medium (coming soon)</option>
+          <option value="hard" disabled title="Not implemented yet">Hard (coming soon)</option>
+        </select>
+      </label>
+    `;
+    row.querySelector(".setup-ai-difficulty").value = previous ? previous.difficulty : "easy";
+    containerEl.appendChild(row);
+  }
+}
+
 /** The public Event Log — also feeds an aria-live region (see index.html). */
 export function renderEventLog(view, listEl) {
   listEl.innerHTML = "";

@@ -11,9 +11,9 @@ Feature: Ending the game
   Scenario: Ending the game once a corporation reaches 41 sectors
     Given the corporation "novaTraders" already occupies 41 sectors
     And "Player 1" already holds 5 shares of "novaTraders"
-    And "Nebula AI" already holds 3 shares of "novaTraders"
+    And "AI Opponent 1" already holds 3 shares of "novaTraders"
     When "Player 1" ends the game via the button
     Then the game over summary is shown
     And the turn status reads "Game over — see the Event Log for final standings."
     And the final standings show "Player 1" with 22500 credits
-    And the final standings show "Nebula AI" with 14800 credits
+    And the final standings show "AI Opponent 1" with 14800 credits

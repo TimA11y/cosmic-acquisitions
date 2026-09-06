@@ -387,12 +387,39 @@ dialog .dialog-actions {
   gap: 0.25rem;
 }
 
-.disposition-inputs input {
-  width: 4rem;
+.disposition-inputs input,
+.setup-field input,
+.setup-field select,
+.setup-ai-row input,
+.setup-ai-row select {
   background: var(--color-bg);
   color: var(--color-text);
   border: 1px solid var(--color-text);
   border-radius: 4px;
   padding: 0.25rem;
   font: inherit;
+}
+
+.disposition-inputs input {
+  width: 4rem;
+}
+
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.setup-ai-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.setup-ai-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }

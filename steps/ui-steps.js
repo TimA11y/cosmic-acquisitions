@@ -15,9 +15,15 @@ import { expect } from "@playwright/test";
 
 const { Given, When, Then } = createBdd();
 
+// Clicks through the setup dialog's defaults (2 players: "Player 1" human +
+// "AI Opponent 1" easy AI) — since the setup dialog now gates game creation
+// (js/ui/main.js only calls createGame() once it's submitted), every
+// existing scenario needs this one fixed point rather than a rewrite.
 Given("the game is freshly loaded", async ({ page }) => {
   await page.goto("/index.html");
-  await page.waitForFunction(() => typeof window.__getTestGameState === "function");
+  await page.waitForSelector("#setup-dialog[open]");
+  await page.locator("#setup-start-button").click();
+  await page.waitForFunction(() => window.__getTestGameState() !== null);
 });
 
 Given("the board already has an unincorporated sector at {string}", async ({ page }, sectorId) => {

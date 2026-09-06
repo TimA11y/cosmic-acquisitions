@@ -1,9 +1,10 @@
 // Entry point. Wires index.html's DOM to js/model/'s pure engine functions
-// and drives a stub easy-tier AI opponent (js/ai/easy.js). Covers the full
-// turnPhase state machine now: placing tiles, founding corporations,
-// resolving mergers (including tie-breaking survivor choice and every
-// shareholder's sell/trade/hold decision), buying shares, ending turns, and
-// voluntarily ending the game once isEndGameAvailable() allows it.
+// and drives 1-5 stub easy-tier AI opponents (js/ai/easy.js), player count
+// and names chosen via the setup dialog on load. Covers the full turnPhase
+// state machine: placing tiles, founding corporations, resolving mergers
+// (including tie-breaking survivor choice and every shareholder's
+// sell/trade/hold decision), buying shares, ending turns, and voluntarily
+// ending the game once isEndGameAvailable() allows it.
 
 import {
   createGame,
@@ -36,15 +37,20 @@ import {
   renderMergerSurvivorDialog,
   renderShareDispositionDialog,
   renderFinalStandings,
+  renderSetupAiRows,
 } from "./render.js";
 
 const HUMAN_ID = "you";
-const AI_ID = "nebula-ai";
 const AI_TURN_DELAY_MS = 500;
 
 const elements = {
   turnStatus: document.getElementById("turn-status"),
   noticeMessage: document.getElementById("notice-message"),
+  setupDialog: document.getElementById("setup-dialog"),
+  setupPlayerCount: document.getElementById("setup-player-count"),
+  setupHumanName: document.getElementById("setup-human-name"),
+  setupAiRows: document.getElementById("setup-ai-rows"),
+  setupStartButton: document.getElementById("setup-start-button"),
   starMapTable: document.getElementById("star-map-table"),
   credits: document.getElementById("credits-display"),
   handList: document.getElementById("hand-list"),
@@ -75,15 +81,17 @@ const elements = {
   shareDispositionConfirm: document.getElementById("share-disposition-confirm"),
 };
 
-// "Player 1" rather than "You" as the display name — the event log's
-// messages are written in the third person for every player uniformly
-// (e.g. "Player 1 buys 2 shares..."), and "You" would read oddly there
-// ("You ends their turn.") even though "Your Ship"/"Your turn" elsewhere in
-// the UI address the human directly by design.
-let gameState = createGame([
-  { id: HUMAN_ID, name: "Player 1", isHuman: true },
-  { id: AI_ID, name: "Nebula AI", isHuman: false },
-]);
+// Nothing exists until the setup dialog is submitted (see "Setup dialog"
+// below) — createGame() runs once, in the setupStartButton click handler.
+let gameState = null;
+
+// Per-AI-player difficulty, keyed by player id — kept here rather than on
+// the model's Player object, since it's AI-dispatch metadata the engine
+// itself has no use for. Only "easy" does anything today (js/ai/easy.js is
+// the only tier built); Medium/Hard are offered in the setup dialog per
+// docs/ai-design.md's confirmed 3-tier design, but disabled there, so this
+// map will only ever actually contain "easy" until those tiers exist.
+let aiDifficulties = {};
 
 let pendingPlacementSectorId = null;
 
@@ -135,12 +143,39 @@ function makeMandatory(dialogEl, explanation) {
   });
 }
 
+makeMandatory(elements.setupDialog, "You must start a game to continue.");
 makeMandatory(elements.foundingDialog, "You must choose a corporation to continue.");
 makeMandatory(elements.mergerSurvivorDialog, "You must choose which corporation survives to continue.");
 makeMandatory(
   elements.shareDispositionDialog,
   "You must decide what to do with these shares to continue.",
 );
+
+// --- Setup dialog -----------------------------------------------------
+
+elements.setupPlayerCount.addEventListener("change", () => {
+  renderSetupAiRows(Number(elements.setupPlayerCount.value), elements.setupAiRows);
+});
+
+elements.setupStartButton.addEventListener("click", () => {
+  const humanName = elements.setupHumanName.value.trim() || "Player 1";
+  const aiRows = [...elements.setupAiRows.querySelectorAll(".setup-ai-row")];
+
+  const playerConfigs = [{ id: HUMAN_ID, name: humanName, isHuman: true }];
+  aiDifficulties = {};
+  aiRows.forEach((row, index) => {
+    const aiId = `ai-${index + 1}`;
+    const name = row.querySelector(".setup-ai-name").value.trim() || `AI Opponent ${index + 1}`;
+    const difficulty = row.querySelector(".setup-ai-difficulty").value;
+    playerConfigs.push({ id: aiId, name, isHuman: false });
+    aiDifficulties[aiId] = difficulty;
+  });
+
+  gameState = createGame(playerConfigs);
+  elements.setupDialog.close();
+  render();
+  maybeStartAiTurn();
+});
 
 // --- Placement dialog -----------------------------------------------------
 
@@ -258,21 +293,28 @@ function openShareDispositionDialog(decision, onResolved) {
   elements.shareDispositionDialog.showModal();
 }
 
+function isHumanPlayer(playerId) {
+  return gameState.players.find((p) => p.id === playerId).isHuman;
+}
+
 /**
  * Resolves every AI-held share-disposition decision at the front of the
  * queue automatically (the easy tier's fixed "sell everything" rule), no
- * matter whose turn triggered the merger. Stops the instant the front of
- * the queue belongs to the human.
+ * matter which AI player holds them or whose turn triggered the merger —
+ * with 1-5 AI opponents now possible (docs/ai-design.md's 2-6 total player
+ * design), this can no longer assume a single fixed AI id. Stops the
+ * instant the front of the queue belongs to the human.
  */
 function autoResolveAiMergerDecisions() {
   while (
     gameState.turnPhase === "resolvingMerger" &&
-    gameState.pendingMerger.shareholderDecisions[0]?.playerId === AI_ID
+    gameState.pendingMerger.shareholderDecisions[0] &&
+    !isHumanPlayer(gameState.pendingMerger.shareholderDecisions[0].playerId)
   ) {
-    const { corporationId } = gameState.pendingMerger.shareholderDecisions[0];
-    const aiPlayer = gameState.players.find((p) => p.id === AI_ID);
+    const { playerId, corporationId } = gameState.pendingMerger.shareholderDecisions[0];
+    const aiPlayer = gameState.players.find((p) => p.id === playerId);
     const shareCount = aiPlayer.shares[corporationId] ?? 0;
-    gameState = decideShareDisposition(gameState, AI_ID, corporationId, decideSellEverything(shareCount));
+    gameState = decideShareDisposition(gameState, playerId, corporationId, decideSellEverything(shareCount));
   }
 }
 
@@ -347,23 +389,30 @@ function handleEndGame() {
 
 // --- AI turn driver ---------------------------------------------------
 
+// Every AI decision call below routes through js/ai/easy.js regardless of
+// aiDifficulties[playerId] — that map only ever holds "easy" today since
+// Medium/Hard are disabled in the setup dialog. Once a medium/hard tier
+// module exists, this is the one place that would dispatch on difficulty
+// instead of always importing from ../ai/easy.js.
+
 function maybeStartAiTurn() {
   if (gameState.turnPhase === "gameOver") return;
-  if (gameState.players[gameState.currentPlayerIndex].id !== AI_ID) return;
-  setTimeout(runAiTurn, AI_TURN_DELAY_MS);
+  const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+  if (currentPlayer.isHuman) return;
+  setTimeout(() => runAiTurn(currentPlayer.id), AI_TURN_DELAY_MS);
 }
 
-function runAiTurn() {
-  const placementAction = choosePlacementAction(getViewFor(gameState, AI_ID), AI_ID);
+function runAiTurn(aiPlayerId) {
+  const placementAction = choosePlacementAction(getViewFor(gameState, aiPlayerId), aiPlayerId);
 
   try {
     if (placementAction.action === "exchange") {
-      gameState = exchangeDeadTile(gameState, AI_ID, placementAction.sectorId);
+      gameState = exchangeDeadTile(gameState, aiPlayerId, placementAction.sectorId);
       render();
-      setTimeout(runAiTurn, AI_TURN_DELAY_MS); // try again with the freshly-drawn sector
+      setTimeout(() => runAiTurn(aiPlayerId), AI_TURN_DELAY_MS); // try again with the freshly-drawn sector
       return;
     }
-    gameState = placeTile(gameState, AI_ID, placementAction.sectorId);
+    gameState = placeTile(gameState, aiPlayerId, placementAction.sectorId);
   } catch (error) {
     console.error("AI placement failed", error);
     render();
@@ -371,26 +420,27 @@ function runAiTurn() {
   }
 
   if (gameState.turnPhase === "choosingCorporationToFound") {
-    const corporationId = chooseRandomCorporationToFound(getViewFor(gameState, AI_ID));
+    const corporationId = chooseRandomCorporationToFound(getViewFor(gameState, aiPlayerId));
     gameState = foundCorporation(gameState, corporationId);
   }
 
   if (gameState.turnPhase === "choosingMergerSurvivor") {
-    const corporationId = chooseRandomMergerSurvivor(getViewFor(gameState, AI_ID));
+    const corporationId = chooseRandomMergerSurvivor(getViewFor(gameState, aiPlayerId));
     gameState = chooseMergerSurvivor(gameState, corporationId);
   }
 
-  // If the human holds shares in whatever's being absorbed, this pauses
-  // here and opens the disposition dialog for them mid-AI-turn, resuming
-  // finishAiTurn() once they confirm.
-  continueMergerResolution(finishAiTurn);
+  // If the human (or another AI, with 3+ players) holds shares in whatever's
+  // being absorbed, this pauses here — opening the disposition dialog if
+  // it's the human's turn to decide — and resumes finishAiTurn() once
+  // every decision is resolved.
+  continueMergerResolution(() => finishAiTurn(aiPlayerId));
 }
 
-function finishAiTurn() {
-  const buyChoice = chooseRandomShareBuy(getViewFor(gameState, AI_ID), AI_ID);
+function finishAiTurn(aiPlayerId) {
+  const buyChoice = chooseRandomShareBuy(getViewFor(gameState, aiPlayerId), aiPlayerId);
   if (buyChoice) {
     try {
-      gameState = buyShares(gameState, AI_ID, buyChoice.corporationId, buyChoice.quantity);
+      gameState = buyShares(gameState, aiPlayerId, buyChoice.corporationId, buyChoice.quantity);
     } catch (error) {
       console.error("AI share purchase failed", error);
     }
@@ -398,7 +448,7 @@ function finishAiTurn() {
   render();
 
   setTimeout(() => {
-    gameState = drawTile(gameState, AI_ID);
+    gameState = drawTile(gameState, aiPlayerId);
     render();
     maybeStartAiTurn();
   }, AI_TURN_DELAY_MS);
@@ -406,11 +456,12 @@ function finishAiTurn() {
 
 // --- Test-only hooks --------------------------------------------------------
 //
-// Let BDD step definitions (steps/ui-steps.js) read the real, freshly
-// created gameState (to get the actual HUMAN_ID/AI_ID and starting
-// players/bank), build a specific board/corporation fixture on top of it —
-// the same plain-object-spread pattern steps/model-steps.js already uses —
-// and see it rendered, the same way a real player's actions would. Inert in
+// Let BDD step definitions (steps/ui-steps.js) read the real gameState
+// created once the setup dialog is submitted (to get the actual player ids
+// and starting players/bank), build a specific board/corporation fixture on
+// top of it — the same plain-object-spread pattern steps/model-steps.js
+// already uses — and see it rendered, the same way a real player's actions
+// would. `getTestGameState()` returns null before setup completes. Inert in
 // normal play: two extra function references on window, never called
 // unless a test calls them.
 window.__getTestGameState = () => gameState;
@@ -421,5 +472,5 @@ window.__setTestGameState = (state) => {
 
 // --- Go ------------------------------------------------------------------
 
-render();
-maybeStartAiTurn();
+renderSetupAiRows(Number(elements.setupPlayerCount.value), elements.setupAiRows);
+elements.setupDialog.showModal();
