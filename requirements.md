@@ -78,9 +78,16 @@ The 7 corporations (2 economy / 3 standard / 2 luxury, matching the original's t
 | Luxury | Titan Industries |
 | Luxury | Zenith Consortium |
 
+## AI opponents (confirmed 2026-09-05)
+
+Configurable player count (2–6 total, one human + the rest AI), each AI opponent independently set to one of three difficulty tiers (easy = random legal moves, medium = one-ply heuristic scoring, hard = determinized Monte Carlo Tree Search), built entirely in vanilla JS with no AI/game libraries (consistent with R3). See `docs/ai-design.md` for the full design.
+
+## Help feature (confirmed 2026-09-05)
+
+Both a full "How to Play" reference (a scrollable `<dialog>`, always reachable from the header) and phase-specific contextual hints (a collapsible `<details>` near the turn status, updating with `turnPhase`). See `docs/help-design.md`.
+
 ## Open / not yet decided
 
-- Number of AI opponents and difficulty levels.
-- AI algorithm approach (Monte Carlo Tree Search is the leading candidate based on research into existing Acquire implementations).
 - Save/resume support.
 - Visual style/art direction.
+- `js/model/` file layout.

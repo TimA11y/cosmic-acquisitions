@@ -47,6 +47,8 @@ projectx/
 - [docs/data-model.md](docs/data-model.md) — core game-state shape (board, corporations, players, bank, public/private info split)
 - [docs/game-engine-api.md](docs/game-engine-api.md) — pure functions that read/transition game state, and the full turn state machine
 - [docs/ui-design.md](docs/ui-design.md) — screen structure, accessible Star Map grid, responsive strategy, interaction model
+- [docs/ai-design.md](docs/ai-design.md) — AI opponent difficulty tiers (random / heuristic / determinized MCTS) and how they use the game engine API
+- [docs/help-design.md](docs/help-design.md) — "How to Play" reference dialog and phase-specific contextual hints
 
 ## Key design constraints
 
