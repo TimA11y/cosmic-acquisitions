@@ -164,6 +164,10 @@ function beginMergerResolution(gameState, survivorId, absorbedIds) {
 export function placeTile(gameState, playerId, sectorId) {
   assertPhase(gameState, "placingTile");
   assertCurrentPlayer(gameState, playerId);
+  const actingPlayer = gameState.players.find((p) => p.id === playerId);
+  if (!actingPlayer.hand.includes(sectorId)) {
+    throw new Error(`${actingPlayer.name} does not hold sector ${sectorId}.`);
+  }
   if (isDeadTile(gameState, sectorId)) {
     throw new Error(`Sector ${sectorId} is a dead tile and cannot be placed.`);
   }

@@ -4,3 +4,6 @@ node_modules/
 # Playwright test artifacts
 test-results/
 playwright-report/
+
+# playwright-bdd generated spec files (regenerated from features/ + steps/)
+.features-gen/

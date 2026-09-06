@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>js/model/ test harness</title>
+  </head>
+  <body>
+    <!--
+      Not part of the shipped game — a page that exists solely so BDD step
+      definitions have a real browser document to load js/model/index.js
+      into via a genuine <script type="module">, per R8/docs/file-layout.md's
+      testing note (pure rule-engine scenarios still need to run as real
+      Playwright browser sessions, not a Node-side `import`/`require`).
+    -->
+    <script type="module">
+      import * as CosmicModel from "/js/model/index.js";
+      window.CosmicModel = CosmicModel;
+      window.modelReady = true;
+    </script>
+  </body>
+</html>

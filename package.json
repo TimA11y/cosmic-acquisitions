@@ -1,0 +1,26 @@
+{
+  "name": "cosmic-acquisitions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A turn-based, space-themed variant of Sid Sackson's board game Acquire, playable in a browser against AI opponents.",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:html": "html-validate \"*.html\" \"test/**/*.html\"",
+    "lint:css": "stylelint \"css/**/*.css\" --allow-empty-input",
+    "test": "bddgen && playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@cucumber/cucumber": "^13.2.1",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "html-validate": "^10.9.0",
+    "playwright-bdd": "^9.2.0",
+    "stylelint": "^17.15.0",
+    "stylelint-config-standard": "^40.0.0"
+  }
+}
