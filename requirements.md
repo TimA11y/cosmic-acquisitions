@@ -90,4 +90,3 @@ Both a full "How to Play" reference (a scrollable `<dialog>`, always reachable f
 
 - Save/resume support.
 - Visual style/art direction.
-- `js/model/` file layout.

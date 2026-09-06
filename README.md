@@ -49,6 +49,7 @@ projectx/
 - [docs/ui-design.md](docs/ui-design.md) — screen structure, accessible Star Map grid, responsive strategy, interaction model
 - [docs/ai-design.md](docs/ai-design.md) — AI opponent difficulty tiers (random / heuristic / determinized MCTS) and how they use the game engine API
 - [docs/help-design.md](docs/help-design.md) — "How to Play" reference dialog and phase-specific contextual hints
+- [docs/file-layout.md](docs/file-layout.md) — `js/model/` file split, dependency direction, and BDD testing implications
 
 ## Key design constraints
 
