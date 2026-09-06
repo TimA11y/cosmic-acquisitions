@@ -38,5 +38,13 @@ export default [
       sourceType: "module",
       globals: { ...globals.node, ...globals.browser },
     },
+    rules: {
+      // Cucumber step callbacks receive every {string}/{int} placeholder as
+      // a positional argument in order — a step whose Gherkin text captures
+      // a value it doesn't need (e.g. a leading "{string}" naming the actor
+      // for readability) still has to declare that parameter to reach the
+      // ones after it, or in some steps as the sole, purely-documentary arg.
+      "no-unused-vars": ["error", { args: "none" }],
+    },
   },
 ];

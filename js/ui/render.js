@@ -13,6 +13,7 @@ import {
   getPrice,
   isSecure,
   isActive,
+  getAvailableCorporations,
   MAX_SHARES_PURCHASED_PER_TURN,
 } from "../model/index.js";
 
@@ -233,4 +234,105 @@ export function renderEventLog(view, listEl) {
     listEl.appendChild(li);
   }
   listEl.scrollTop = listEl.scrollHeight;
+}
+
+/**
+ * The "choosingCorporationToFound" dialog: one button per still-available
+ * corporation name. `elements` = { messageEl, listEl }. Clicking a button
+ * *is* the confirm action — mirrors the Market's Buy buttons rather than
+ * adding a separate Confirm step for a single choice.
+ */
+export function renderFoundingDialog(gameState, elements, onChoose) {
+  elements.messageEl.textContent = "Choose a corporation to found:";
+  elements.listEl.innerHTML = "";
+  for (const corporation of getAvailableCorporations(gameState.corporations)) {
+    const li = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `${corporation.name} (${corporation.tier})`;
+    button.addEventListener("click", () => onChoose(corporation.id));
+    li.appendChild(button);
+    elements.listEl.appendChild(li);
+  }
+}
+
+/**
+ * The "choosingMergerSurvivor" dialog: one button per corporation tied for
+ * largest. `elements` = { messageEl, listEl }.
+ */
+export function renderMergerSurvivorDialog(gameState, elements, onChoose) {
+  const { candidateSurvivorIds, corporationIds } = gameState.pendingMerger;
+  const names = corporationIds.map((id) => gameState.corporations[id].name).join(" and ");
+  elements.messageEl.textContent = `Merging ${names}. Choose which corporation survives:`;
+
+  elements.listEl.innerHTML = "";
+  for (const corporationId of candidateSurvivorIds) {
+    const li = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = gameState.corporations[corporationId].name;
+    button.addEventListener("click", () => onChoose(corporationId));
+    li.appendChild(button);
+    elements.listEl.appendChild(li);
+  }
+}
+
+/**
+ * The "resolvingMerger" share-disposition dialog: sell/trade/hold inputs
+ * that must sum to the shareholder's full holding, with live validation
+ * (both the arithmetic and the trade-pair/bank-availability rules that
+ * js/model/game.js's decideShareDisposition() itself enforces — checking
+ * them here too means the player finds out about a mistake immediately,
+ * rather than via a thrown error). Defaults to "sell everything", so
+ * confirming immediately without changing anything is always a valid
+ * one-click action.
+ * `elements` = { messageEl, sellInput, tradeInput, holdInput, validationEl, confirmButton }.
+ * `onConfirm` receives the validated { sell, trade, hold } object.
+ */
+export function renderShareDispositionDialog(gameState, decision, elements, onConfirm) {
+  const player = gameState.players.find((p) => p.id === decision.playerId);
+  const corporation = gameState.corporations[decision.corporationId];
+  const shareCount = player.shares[decision.corporationId] ?? 0;
+  const survivor = gameState.corporations[gameState.pendingMerger.survivorId];
+
+  elements.messageEl.textContent =
+    `${player.name} holds ${shareCount} share(s) of ${corporation.name}, being absorbed into ` +
+    `${survivor.name}. Decide how many to sell, trade (2-for-1 into ${survivor.name}), or hold.`;
+
+  elements.sellInput.value = String(shareCount);
+  elements.tradeInput.value = "0";
+  elements.holdInput.value = "0";
+
+  function validate() {
+    const sell = Number(elements.sellInput.value) || 0;
+    const trade = Number(elements.tradeInput.value) || 0;
+    const hold = Number(elements.holdInput.value) || 0;
+    const reasons = [];
+
+    if (sell + trade + hold !== shareCount) {
+      reasons.push(`sell + trade + hold must add up to ${shareCount}`);
+    }
+    if (trade % 2 !== 0) {
+      reasons.push("trade must be an even number (2 shares per 1 new share)");
+    }
+    const survivorSharesNeeded = Math.floor(trade / 2);
+    if (survivorSharesNeeded > gameState.bank.sharesRemaining[survivor.id]) {
+      reasons.push(`the bank only has ${gameState.bank.sharesRemaining[survivor.id]} ${survivor.name} shares left`);
+    }
+
+    const valid = reasons.length === 0;
+    elements.validationEl.textContent = valid ? "" : `Cannot confirm: ${reasons.join("; ")}.`;
+    elements.confirmButton.setAttribute("aria-disabled", String(!valid));
+    return valid ? { sell, trade, hold } : null;
+  }
+
+  elements.sellInput.oninput = validate;
+  elements.tradeInput.oninput = validate;
+  elements.holdInput.oninput = validate;
+  elements.confirmButton.onclick = () => {
+    const decisionValues = validate();
+    if (decisionValues) onConfirm(decisionValues);
+  };
+
+  validate();
 }

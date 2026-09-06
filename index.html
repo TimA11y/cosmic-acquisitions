@@ -20,12 +20,12 @@
     </header>
 
     <!--
-      Shown only when the turn machine reaches a phase this build doesn't
-      have a dialog for yet (founding/merger). See js/ui/main.js's
-      handleUnsupportedPhase(). Not part of docs/ui-design.md's normal
-      interaction model — a deliberate, honest limitation of this pass.
+      Generic notice banner — currently used to explain why Escape/backdrop
+      click didn't dismiss a mandatory dialog (founding/merger-survivor/
+      share-disposition), per docs/ui-design.md's "Dialogs" section: those
+      decisions have no valid way to be abandoned once the phase is entered.
     -->
-    <p id="unsupported-phase-message" role="alert" hidden></p>
+    <p id="notice-message" role="alert" hidden></p>
 
     <main>
       <section id="star-map" aria-labelledby="star-map-heading">
@@ -77,6 +77,35 @@
       <div class="dialog-actions">
         <button id="placement-dialog-cancel" type="button">Cancel</button>
         <button id="placement-dialog-confirm" type="button">Confirm</button>
+      </div>
+    </dialog>
+
+    <!--
+      Mandatory dialogs (docs/ui-design.md): each is populated by
+      js/ui/render.js right before being shown, and intercepts Escape /
+      backdrop-click via js/ui/main.js's makeMandatory() helper, since none
+      of these three decisions has a valid way to be abandoned mid-turn.
+    -->
+    <dialog id="founding-dialog">
+      <p id="founding-dialog-message"></p>
+      <ul id="founding-choice-list" class="dialog-choice-list"></ul>
+    </dialog>
+
+    <dialog id="merger-survivor-dialog">
+      <p id="merger-survivor-message"></p>
+      <ul id="merger-survivor-choice-list" class="dialog-choice-list"></ul>
+    </dialog>
+
+    <dialog id="share-disposition-dialog">
+      <p id="share-disposition-message"></p>
+      <div class="disposition-inputs">
+        <label>Sell <input type="number" id="disposition-sell" min="0" value="0"></label>
+        <label>Trade <input type="number" id="disposition-trade" min="0" value="0"></label>
+        <label>Hold <input type="number" id="disposition-hold" min="0" value="0"></label>
+      </div>
+      <p id="share-disposition-validation" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button id="share-disposition-confirm" type="button">Confirm</button>
       </div>
     </dialog>
 
