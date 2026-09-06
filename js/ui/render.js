@@ -14,6 +14,7 @@ import {
   isSecure,
   isActive,
   getAvailableCorporations,
+  isEndGameAvailable,
   MAX_SHARES_PURCHASED_PER_TURN,
 } from "../model/index.js";
 
@@ -114,9 +115,10 @@ export function renderStarMap(view, humanId, tableEl, onPlaceableCellClick) {
 }
 
 /**
- * "Your Ship": the human's private panel (hand, shares, credits, End Turn).
- * `elements` = { creditsEl, handListEl, sharesListEl, endTurnButtonEl }.
- * `callbacks` = { onHandTileClick(sectorId), onEndTurn() }.
+ * "Your Ship": the human's private panel (hand, shares, credits, End Turn,
+ * End Game). `elements` = { creditsEl, handListEl, sharesListEl,
+ * endTurnButtonEl, endGameButtonEl }.
+ * `callbacks` = { onHandTileClick(sectorId), onEndTurn(), onEndGame() }.
  */
 export function renderYourShip(view, humanId, elements, callbacks) {
   const human = view.players.find((p) => p.id === humanId);
@@ -154,6 +156,34 @@ export function renderYourShip(view, humanId, elements, callbacks) {
   const isBuyingTurn = view.turnPhase === "buyingShares" && isCurrentPlayer(view, humanId);
   elements.endTurnButtonEl.hidden = !isBuyingTurn;
   elements.endTurnButtonEl.onclick = isBuyingTurn ? callbacks.onEndTurn : null;
+
+  // Voluntary end-of-game action (docs/game-engine-api.md's endGame()) —
+  // available on the human's turn, in any phase, the moment some
+  // corporation reaches 41+ sectors or every active corporation is secure.
+  const canEndGame =
+    view.turnPhase !== "gameOver" && isCurrentPlayer(view, humanId) && isEndGameAvailable(view);
+  elements.endGameButtonEl.hidden = !canEndGame;
+  elements.endGameButtonEl.onclick = canEndGame ? callbacks.onEndGame : null;
+}
+
+/**
+ * The Game Over summary: shown once turnPhase is "gameOver", listing every
+ * player's final credit total (endGame()'s finalStandings, already sorted
+ * highest-first) — final totals are public information once the game has
+ * actually ended, unlike mid-game credits.
+ */
+export function renderFinalStandings(view, sectionEl, listEl) {
+  if (view.turnPhase !== "gameOver") {
+    sectionEl.hidden = true;
+    return;
+  }
+  sectionEl.hidden = false;
+  listEl.innerHTML = "";
+  for (const { name, credits } of view.finalStandings) {
+    const li = document.createElement("li");
+    li.textContent = `${name} — ${credits} Credits`;
+    listEl.appendChild(li);
+  }
 }
 
 /**

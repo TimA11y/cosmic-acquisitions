@@ -65,6 +65,33 @@ Given(
   },
 );
 
+Given("the corporation {string} already occupies {int} sectors", async ({ page }, corporationId, count) => {
+  await page.evaluate(
+    ({ cId, n }) => {
+      const rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+      const ids = [];
+      for (let col = 1; col <= 12 && ids.length < n; col += 1) {
+        for (const row of rows) {
+          ids.push(`${col}-${row}`);
+          if (ids.length === n) break;
+        }
+      }
+      const state = window.__getTestGameState();
+      const board = new Map(state.board);
+      for (const id of ids) board.set(id, { corporationId: cId });
+      window.__setTestGameState({
+        ...state,
+        board,
+        corporations: {
+          ...state.corporations,
+          [cId]: { ...state.corporations[cId], sectors: new Set(ids) },
+        },
+      });
+    },
+    { cId: corporationId, n: count },
+  );
+});
+
 Given("{string} already holds {int} shares of {string}", async ({ page }, playerName, count, corporationId) => {
   await page.evaluate(
     ({ name, n, cId }) => {
@@ -101,6 +128,10 @@ When("{string} confirms the share disposition dialog with default values", async
   await page.locator("#share-disposition-confirm").click();
 });
 
+When("{string} ends the game via the button", async ({ page }, playerName) => {
+  await page.locator("#end-game-button").click();
+});
+
 Then("the founding dialog is open", async ({ page }) => {
   await expect(page.locator("#founding-dialog")).toBeVisible();
 });
@@ -120,4 +151,12 @@ Then("the turn status reads {string}", async ({ page }, expectedText) => {
 Then("{string} shows {int} sectors in the Market", async ({ page }, corporationName, count) => {
   const row = page.locator("#market-table-body tr", { hasText: corporationName });
   await expect(row.locator("td").nth(2)).toHaveText(String(count));
+});
+
+Then("the game over summary is shown", async ({ page }) => {
+  await expect(page.locator("#game-over")).toBeVisible();
+});
+
+Then("the final standings show {string} with {int} credits", async ({ page }, name, credits) => {
+  await expect(page.locator("#final-standings-list")).toContainText(`${name} — ${credits} Credits`);
 });

@@ -2,7 +2,8 @@
 // and drives a stub easy-tier AI opponent (js/ai/easy.js). Covers the full
 // turnPhase state machine now: placing tiles, founding corporations,
 // resolving mergers (including tie-breaking survivor choice and every
-// shareholder's sell/trade/hold decision), buying shares, and ending turns.
+// shareholder's sell/trade/hold decision), buying shares, ending turns, and
+// voluntarily ending the game once isEndGameAvailable() allows it.
 
 import {
   createGame,
@@ -13,6 +14,7 @@ import {
   buyShares,
   drawTile,
   exchangeDeadTile,
+  endGame,
   getViewFor,
   analyzePlacement,
   isDeadTile,
@@ -33,6 +35,7 @@ import {
   renderFoundingDialog,
   renderMergerSurvivorDialog,
   renderShareDispositionDialog,
+  renderFinalStandings,
 } from "./render.js";
 
 const HUMAN_ID = "you";
@@ -47,6 +50,9 @@ const elements = {
   handList: document.getElementById("hand-list"),
   sharesList: document.getElementById("shares-list"),
   endTurnButton: document.getElementById("end-turn-button"),
+  endGameButton: document.getElementById("end-game-button"),
+  gameOverSection: document.getElementById("game-over"),
+  finalStandingsList: document.getElementById("final-standings-list"),
   marketStatus: document.getElementById("share-purchase-status"),
   marketTableBody: document.getElementById("market-table-body"),
   eventLogList: document.getElementById("event-log-list"),
@@ -93,8 +99,9 @@ function render() {
       handListEl: elements.handList,
       sharesListEl: elements.sharesList,
       endTurnButtonEl: elements.endTurnButton,
+      endGameButtonEl: elements.endGameButton,
     },
-    { onHandTileClick: openPlacementDialog, onEndTurn: handleEndTurn },
+    { onHandTileClick: openPlacementDialog, onEndTurn: handleEndTurn, onEndGame: handleEndGame },
   );
   renderMarket(
     view,
@@ -103,6 +110,7 @@ function render() {
     { onBuy: handleBuyShares },
   );
   renderEventLog(view, elements.eventLogList);
+  renderFinalStandings(view, elements.gameOverSection, elements.finalStandingsList);
 }
 
 function showNotice(text) {
@@ -326,6 +334,15 @@ function handleEndTurn() {
   }
   render();
   maybeStartAiTurn();
+}
+
+function handleEndGame() {
+  try {
+    gameState = endGame(gameState, HUMAN_ID);
+  } catch (error) {
+    console.error(error);
+  }
+  render();
 }
 
 // --- AI turn driver ---------------------------------------------------
