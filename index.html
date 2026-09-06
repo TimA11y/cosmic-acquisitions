@@ -17,7 +17,12 @@
     <header>
       <h1>Cosmic Acquisitions</h1>
       <p id="turn-status" aria-live="polite">Setting up a new game&hellip;</p>
+      <button id="how-to-play-button" type="button">How to Play</button>
       <button id="new-game-button" type="button" hidden>New Game</button>
+      <details id="contextual-hint" hidden>
+        <summary>Need help with this step?</summary>
+        <p id="contextual-hint-text"></p>
+      </details>
     </header>
 
     <!--
@@ -78,6 +83,85 @@
         <ul id="event-log-list" aria-live="polite"></ul>
       </section>
     </main>
+
+    <!--
+      Reachable from any screen/phase (docs/help-design.md) — freely
+      dismissible, unlike every other dialog here: reading a reference isn't
+      a decision that needs to be intercepted. Each heading below carries a
+      stable id + tabindex="-1" so a contextual hint's "learn more" control
+      can scroll to AND focus a specific section (see js/ui/main.js's
+      openHelpDialog()), not just open the dialog at the top.
+    -->
+    <dialog id="help-dialog">
+      <h2>How to Play</h2>
+
+      <h3 id="help-goal" tabindex="-1">The Goal</h3>
+      <p>
+        Cosmic Acquisitions is a game of claiming territory and owning the right Corporations
+        at the right time. When the game ends, whoever holds the most Credits — cash plus the
+        value of their Shares — wins.
+      </p>
+
+      <h3 id="help-turn-structure" tabindex="-1">Taking a Turn</h3>
+
+      <h4 id="help-placing" tabindex="-1">Placing a Sector</h4>
+      <p>
+        Each turn starts by placing one Sector from your hand onto the Star Map — click its
+        button in Your Ship, or the matching cell on the map itself. Placing a Sector next to an
+        existing Corporation grows it; placing it next to a lone, unincorporated Sector founds a
+        new Corporation; placing it where it touches two or more Corporations at once triggers a
+        Merger.
+      </p>
+
+      <h4 id="help-founding" tabindex="-1">Founding a Corporation</h4>
+      <p>
+        If more than one Corporation name is still unused, you choose which one to found. The
+        founder immediately receives one free Share of the new Corporation, if the bank has one
+        available.
+      </p>
+
+      <h4 id="help-mergers" tabindex="-1">Mergers and Bonuses</h4>
+      <p>
+        When a placement connects two or more Corporations, the largest survives; if there's a
+        tie for largest, you choose which one. Every absorbed Corporation pays a majority and
+        minority bonus to its largest shareholders, based on its Share price at the moment of the
+        merger. Each shareholder then decides, for their Shares in the absorbed Corporation, how
+        many to sell back to the bank, trade two-for-one into Shares of the surviving
+        Corporation, or hold onto in case the name is founded again later.
+      </p>
+
+      <h4 id="help-buying-shares" tabindex="-1">Buying Shares</h4>
+      <p>
+        After placing, you may buy up to 3 Shares total this turn from any active Corporation, if
+        you can afford them and the bank has some left. Buying is optional — press End Turn
+        whenever you're done.
+      </p>
+
+      <h4 id="help-drawing" tabindex="-1">Drawing Back to Six</h4>
+      <p>
+        Ending your turn draws your hand back up to 6 Sectors from the Sector pool (if any
+        remain), and play passes to the next player.
+      </p>
+
+      <h3 id="help-secure" tabindex="-1">Secure Corporations</h3>
+      <p>
+        A Corporation with 11 or more Sectors is Secure — it can never be absorbed into another
+        Corporation, though it can still absorb others. A Sector that would merge two Secure
+        Corporations together can't legally be placed; it's discarded and replaced instead.
+      </p>
+
+      <h3 id="help-ending" tabindex="-1">Ending the Game</h3>
+      <p>
+        Once any Corporation reaches 41 or more Sectors, or every active Corporation is Secure,
+        ending the game becomes available — press End Game on your turn. Every active Corporation
+        is liquidated (majority/minority bonuses paid, then all Shares cashed out at the final
+        price), and whoever has the most Credits wins.
+      </p>
+
+      <div class="dialog-actions">
+        <button id="help-dialog-close" type="button">Close</button>
+      </div>
+    </dialog>
 
     <!--
       Shown via showModal() on load, before any game exists — mandatory,

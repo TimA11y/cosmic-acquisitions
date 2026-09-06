@@ -292,6 +292,57 @@ export function renderSetupAiRows(count, containerEl) {
   }
 }
 
+// Phase -> contextual hint text + the "How to Play" section id its "Learn
+// more" link deep-links to (see js/ui/main.js's openHelpDialog()). Only
+// covers phases where the HUMAN might have something to do — an AI's turn
+// has nothing to hint about, so renderContextualHint() below hides the
+// widget entirely rather than looking one up.
+const CONTEXTUAL_HINTS = {
+  placingTile: {
+    text: "Click a Sector in your hand, or its matching cell on the Star Map, to place it. You'll be asked to confirm before anything happens.",
+    sectionId: "help-placing",
+  },
+  buyingShares: {
+    text: "You may buy up to 3 Shares this turn from the Market, or press End Turn to skip.",
+    sectionId: "help-buying-shares",
+  },
+  choosingCorporationToFound: {
+    text: "Choose which Corporation to found from the connected Sectors you just placed.",
+    sectionId: "help-founding",
+  },
+  choosingMergerSurvivor: {
+    text: "Two or more Corporations are tied for largest — choose which one survives the merger.",
+    sectionId: "help-mergers",
+  },
+  resolvingMerger: {
+    text: "Decide how many of your Shares in the absorbed Corporation to sell, trade, or hold.",
+    sectionId: "help-mergers",
+  },
+};
+
+/**
+ * Updates the contextual hint's text only — deliberately never touches the
+ * <details> element's `open` attribute, so a hint the player has manually
+ * expanded stays expanded across a phase change (docs/help-design.md).
+ * Hidden entirely when there's no game yet, the game is over, or it isn't
+ * the human's turn (nothing for them to do right now).
+ * `elements` = { detailsEl, textEl }.
+ */
+export function renderContextualHint(view, humanId, elements) {
+  const hint = CONTEXTUAL_HINTS[view.turnPhase];
+  const isHumansTurn = isCurrentPlayer(view, humanId);
+
+  if (!hint || !isHumansTurn) {
+    elements.detailsEl.hidden = true;
+    return;
+  }
+
+  elements.detailsEl.hidden = false;
+  elements.textEl.innerHTML =
+    `${hint.text} ` +
+    `<button type="button" class="link-button" data-help-section="${hint.sectionId}">Learn more</button>`;
+}
+
 /** The public Event Log — also feeds an aria-live region (see index.html). */
 export function renderEventLog(view, listEl) {
   listEl.innerHTML = "";

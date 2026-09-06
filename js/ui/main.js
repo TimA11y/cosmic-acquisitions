@@ -38,6 +38,7 @@ import {
   renderShareDispositionDialog,
   renderFinalStandings,
   renderSetupAiRows,
+  renderContextualHint,
 } from "./render.js";
 import { loadSavedGame, saveGame, clearSavedGame } from "./storage.js";
 
@@ -47,6 +48,11 @@ const AI_TURN_DELAY_MS = 500;
 const elements = {
   turnStatus: document.getElementById("turn-status"),
   noticeMessage: document.getElementById("notice-message"),
+  howToPlayButton: document.getElementById("how-to-play-button"),
+  helpDialog: document.getElementById("help-dialog"),
+  helpDialogClose: document.getElementById("help-dialog-close"),
+  contextualHint: document.getElementById("contextual-hint"),
+  contextualHintText: document.getElementById("contextual-hint-text"),
   newGameButton: document.getElementById("new-game-button"),
   resumeDialog: document.getElementById("resume-dialog"),
   resumeGameButton: document.getElementById("resume-game-button"),
@@ -127,6 +133,10 @@ function render() {
   );
   renderEventLog(view, elements.eventLogList);
   renderFinalStandings(view, elements.gameOverSection, elements.finalStandingsList);
+  renderContextualHint(view, HUMAN_ID, {
+    detailsEl: elements.contextualHint,
+    textEl: elements.contextualHintText,
+  });
 }
 
 function showNotice(text) {
@@ -159,6 +169,36 @@ makeMandatory(
   elements.shareDispositionDialog,
   "You must decide what to do with these shares to continue.",
 );
+
+// --- How to Play / contextual hints ---------------------------------------
+//
+// Unlike every other dialog here, help-dialog is freely dismissible — no
+// makeMandatory() call — since reading reference material isn't a decision
+// that needs to be intercepted (docs/help-design.md). Opening it also
+// doesn't pause AI turns: maybeStartAiTurn()'s setTimeout scheduling has no
+// idea this dialog exists, so an AI turn already in flight just keeps going
+// in the background exactly as it would if the dialog were closed.
+
+function openHelpDialog(sectionId) {
+  elements.helpDialog.showModal();
+  if (!sectionId) return;
+
+  const target = elements.helpDialog.querySelector(`#${sectionId}`);
+  if (!target) return;
+  target.scrollIntoView();
+  target.focus();
+}
+
+elements.howToPlayButton.addEventListener("click", () => openHelpDialog());
+elements.helpDialogClose.addEventListener("click", () => elements.helpDialog.close());
+
+// One delegated listener covers every contextual hint's "Learn more"
+// control, since renderContextualHint() rebuilds that button's markup on
+// every render rather than handing back a stable element to attach to.
+elements.contextualHintText.addEventListener("click", (event) => {
+  const sectionId = event.target.dataset.helpSection;
+  if (sectionId) openHelpDialog(sectionId);
+});
 
 // --- Save / resume / new game --------------------------------------------
 

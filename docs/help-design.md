@@ -20,8 +20,10 @@ Rather than adding more text to the header's turn-status live region (see `docs/
 - **State is not forced closed on phase change** — if a player has expanded it, it stays expanded (only its text content updates) rather than collapsing and re-nagging every turn. This respects a player's choice to keep hints visible without being naggy toward someone who's already dismissed it once.
 - Each hint's text can end with a link into the relevant section of the "How to Play" dialog, for a player who wants more depth than the short contextual explanation gives.
 
-## Open questions for the next design step
+## Implementation notes (resolved 2026-09-06)
 
-- Exact hint copy for every `turnPhase` value.
-- Full "How to Play" dialog copy (goal/rules text in the final space-theme voice).
-- Whether "How to Play" should support deep-linking to a specific section (e.g. from a contextual hint's "learn more" link) versus always opening at the top.
+Both pieces are built, in `index.html`/`js/ui/render.js`/`js/ui/main.js`:
+
+- **Exact copy** for both the full "How to Play" dialog and every contextual hint is now written (see `index.html`'s `#help-dialog` and `js/ui/render.js`'s `CONTEXTUAL_HINTS` lookup table) — no longer an open question.
+- **Deep-linking is real**, not a plain-text reference: every heading in `#help-dialog` carries a stable id (`#help-placing`, `#help-founding`, `#help-mergers`, `#help-buying-shares`, `#help-drawing`, `#help-secure`, `#help-ending`) plus `tabindex="-1"`. Each contextual hint ends with a `.link-button` (a real `<button>` styled as an inline text link — a plain `<a href="#...">` can't both open a *closed* `<dialog>` and scroll to a spot inside it) carrying a `data-help-section` attribute. `js/ui/main.js`'s `openHelpDialog(sectionId)` opens the dialog, then `scrollIntoView()`s and `.focus()`s the target heading — the focus move (not just the scroll) is what makes this actually usable for keyboard/screen-reader users, not just a visual jump.
+- Contextual hints are only shown for phases where the **human** has something to decide (`placingTile`, `buyingShares`, `choosingCorporationToFound`, `choosingMergerSurvivor`, `resolvingMerger`) — hidden entirely during an AI's turn, before a game exists, or once `turnPhase` is `"gameOver"`, none of which this doc's original scope anticipated (written before AI turns or game-over existed as concrete states).
