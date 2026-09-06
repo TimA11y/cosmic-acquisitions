@@ -1,0 +1,340 @@
+/*
+  Neon-cyberpunk direction from docs/visual-design.md, with the palette
+  finalized here (see the same doc's updated "Palette roles" section for the
+  contrast-ratio math). Colors are custom properties named by ROLE, not by
+  hue, so every rule below reads as "why", not just "what color".
+*/
+:root {
+  --color-bg: #0d0d14;
+  --color-text: #eef0f5;
+  --color-economy: #4deeea;
+  --color-standard: #ff6ec7;
+  --color-luxury: #f9f871;
+  --color-focus: #fff;
+  --color-panel-border: #33333f;
+  --font-body: ui-sans-serif, "Segoe UI", roboto, sans-serif;
+  --transition-fast: 120ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Skip links — standard visually-hidden-until-focused pattern (R10/R11)   */
+
+/* ---------------------------------------------------------------------- */
+
+.skip-links {
+  position: relative;
+}
+
+.skip-links a {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 0.5em 1em;
+  border: 2px solid var(--color-focus);
+  z-index: 10;
+}
+
+.skip-links a:focus {
+  left: 0.5em;
+  top: 0.5em;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Focus visibility — one consistent treatment for every interactive       */
+
+/* element, since the default browser ring is easy to lose against a dark  */
+
+/* background.                                                             */
+
+/* ---------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Header                                                                  */
+
+/* ---------------------------------------------------------------------- */
+
+header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+#turn-status {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Layout — single DOM order always; a wider viewport repositions          */
+
+/* sections visually via grid-template-areas without reordering the DOM,   */
+
+/* per docs/ui-design.md's responsive strategy.                            */
+
+/* ---------------------------------------------------------------------- */
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+main > section {
+  border: 1px solid var(--color-panel-border);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+main > section > h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+@media (width >= 900px) {
+  main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-areas:
+      "star-map your-ship"
+      "star-map market"
+      "event-log event-log";
+  }
+
+  #star-map {
+    grid-area: star-map;
+  }
+
+  #your-ship {
+    grid-area: your-ship;
+  }
+
+  #market {
+    grid-area: market;
+  }
+
+  #event-log {
+    grid-area: event-log;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Buttons — neon-outlined against the dark background, near-white text    */
+
+/* (docs/visual-design.md's "interactive elements" role). Declared before   */
+
+/* the Star Map's more specific button rules below, so cascade order       */
+
+/* matches specificity order.                                              */
+
+/* ---------------------------------------------------------------------- */
+
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  min-height: 24px;
+  min-width: 24px;
+  padding: 0.4em 0.8em;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+button:hover:not([aria-disabled="true"], :disabled) {
+  background: var(--color-panel-border);
+}
+
+button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Star Map                                                                */
+
+/* ---------------------------------------------------------------------- */
+
+#star-map table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#star-map caption {
+  text-align: left;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+#star-map th,
+#star-map td {
+  border: 1px solid var(--color-panel-border);
+  text-align: center;
+  padding: 0;
+  min-width: 24px;
+  min-height: 24px;
+  width: 24px;
+  height: 24px;
+  font-size: 0.75rem;
+}
+
+#star-map td button {
+  width: 100%;
+  height: 100%;
+  min-width: 24px;
+  min-height: 24px;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+#star-map td button:hover {
+  background: var(--color-panel-border);
+}
+
+.sector-star {
+  /* Decorative only — never the sole indicator of state (see the visually
+     hidden text alongside it in each cell). */
+  font-style: normal;
+}
+
+.sector-star[aria-hidden="true"] {
+  display: inline-block;
+}
+
+.tier-economy {
+  color: var(--color-economy);
+}
+
+.tier-standard {
+  color: var(--color-standard);
+}
+
+.tier-luxury {
+  color: var(--color-luxury);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Your Ship / Market lists                                                */
+
+/* ---------------------------------------------------------------------- */
+
+.hand-list,
+.shares-list,
+.corporation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.corporation-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-panel-border);
+  padding-bottom: 0.5rem;
+}
+
+.credits-display {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Event log                                                               */
+
+/* ---------------------------------------------------------------------- */
+
+#event-log ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+#event-log li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--color-panel-border);
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Dialog                                                                  */
+
+/* ---------------------------------------------------------------------- */
+
+dialog {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-radius: 4px;
+  padding: 1.5rem;
+  max-width: 30rem;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 60%);
+}
+
+dialog .dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}

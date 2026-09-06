@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cosmic Acquisitions</title>
+    <link rel="stylesheet" href="css/main.css">
+  </head>
+  <body>
+    <nav class="skip-links" aria-label="Skip to section">
+      <a href="#star-map">Star Map</a>
+      <a href="#your-ship">Your Ship</a>
+      <a href="#market">Market</a>
+      <a href="#event-log">Event Log</a>
+    </nav>
+
+    <header>
+      <h1>Cosmic Acquisitions</h1>
+      <p id="turn-status" aria-live="polite">Setting up a new game&hellip;</p>
+    </header>
+
+    <!--
+      Shown only when the turn machine reaches a phase this build doesn't
+      have a dialog for yet (founding/merger). See js/ui/main.js's
+      handleUnsupportedPhase(). Not part of docs/ui-design.md's normal
+      interaction model — a deliberate, honest limitation of this pass.
+    -->
+    <p id="unsupported-phase-message" role="alert" hidden></p>
+
+    <main>
+      <section id="star-map" aria-labelledby="star-map-heading">
+        <h2 id="star-map-heading">Star Map</h2>
+        <table id="star-map-table">
+          <caption>Star Map</caption>
+        </table>
+      </section>
+
+      <section id="your-ship" aria-labelledby="your-ship-heading">
+        <h2 id="your-ship-heading">Your Ship</h2>
+        <p class="credits-display">
+          Credits: <span id="credits-display">0</span>
+        </p>
+        <h3>Hand</h3>
+        <ul id="hand-list" class="hand-list"></ul>
+        <h3>Your Shares</h3>
+        <ul id="shares-list" class="shares-list"></ul>
+        <button id="end-turn-button" type="button" hidden>End Turn</button>
+      </section>
+
+      <section id="market" aria-labelledby="market-heading">
+        <h2 id="market-heading">Market</h2>
+        <p id="share-purchase-status" aria-live="polite"></p>
+        <table id="market-table">
+          <thead>
+            <tr>
+              <th scope="col">Corporation</th>
+              <th scope="col">Tier</th>
+              <th scope="col">Sectors</th>
+              <th scope="col">Secure</th>
+              <th scope="col">Price</th>
+              <th scope="col">Shares left</th>
+              <th scope="col">Buy</th>
+            </tr>
+          </thead>
+          <tbody id="market-table-body"></tbody>
+        </table>
+      </section>
+
+      <section id="event-log" aria-labelledby="event-log-heading">
+        <h2 id="event-log-heading">Event Log</h2>
+        <ul id="event-log-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <dialog id="placement-dialog">
+      <p id="placement-dialog-message"></p>
+      <div class="dialog-actions">
+        <button id="placement-dialog-cancel" type="button">Cancel</button>
+        <button id="placement-dialog-confirm" type="button">Confirm</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="js/ui/main.js"></script>
+  </body>
+</html>
