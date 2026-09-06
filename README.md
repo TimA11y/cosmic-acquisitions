@@ -35,10 +35,18 @@ projectx/
   js/
   features/        # Cucumber .feature files (Gherkin scenarios)
   steps/            # Cucumber step definitions (Playwright-driven)
+  docs/             # design reference docs (data model, etc.)
   package.json      # dev dependencies only
   README.md
   requirements.md
 ```
+
+## Design docs
+
+- [requirements.md](requirements.md) — itemized requirements
+- [docs/data-model.md](docs/data-model.md) — core game-state shape (board, corporations, players, bank, public/private info split)
+- [docs/game-engine-api.md](docs/game-engine-api.md) — pure functions that read/transition game state, and the full turn state machine
+- [docs/ui-design.md](docs/ui-design.md) — screen structure, accessible Star Map grid, responsive strategy, interaction model
 
 ## Key design constraints
 

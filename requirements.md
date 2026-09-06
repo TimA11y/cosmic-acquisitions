@@ -41,9 +41,45 @@ Itemized requirements for Project X, gathered during requirements discussions. T
 - Explain reasoning and actions as work happens, not just a summary at the end.
 - Comment code thoroughly to explain what it does and why, even where it might otherwise be considered self-evident.
 
+## Game information model (from base-game research)
+
+These aren't new requirements so much as constraints on the UI/data design, captured here so they aren't lost before we get to design:
+
+- **Private to each player** (must never be shown to other players/opponents' views): tile hand contents, own stock holdings totals, own cash total.
+- **Public to all players** (always visible): the full board state, each chain's size/tier/safety status, the price chart, shares remaining in the bank per chain, turn order, count of tiles left in the draw pile.
+- **Public but transactional**: buying stock is an open action — *what* a player buys on their turn (chain + quantity) is visible to everyone as it happens (e.g. an event-log entry), even though their *cumulative* holdings/cash total afterward stays on their own private panel only.
+- **Design implication:** the UI needs a clear separation between "your private panel" (hand, your stock, your cash) and "the public table state" (board, market, event log) — this matters especially for screen reader users, who need this distinction made explicit via structure/labeling rather than spatial layout. AI opponents' hidden information (hand contents, exact holdings) must not be readable by the human player's UI, and the AI's own decision logic should only use information it would legitimately know (this also matters for the "imperfect information" MCTS-style AI approach discussed earlier).
+
+## Space theme glossary (confirmed 2026-09-05)
+
+The mechanics are unchanged from base Acquire (same price brackets, 60/30 bonus split, 25-share cap per corporation, 41-tile/all-secure endgame triggers) — only terminology changes. Kept intentionally from the original design: **all 7 corporation names start with a different letter**, so players (and screen reader users navigating by first letter) can distinguish them instantly.
+
+| Acquire term | Space term |
+|---|---|
+| Board | Star Map |
+| Tile / board square | Sector (e.g. "Sector 6-B" — same letter+number coordinates as the original grid) |
+| Hotel chain | Corporation |
+| Founding a chain | Founding a corporation |
+| Merger | Merger (unchanged) |
+| Safe chain (11+ tiles) | Secure |
+| Stock / shares | Shares (unchanged) |
+| Cash | Credits |
+| Tile bag / draw pool | Sector pool |
+
+The 7 corporations (2 economy / 3 standard / 2 luxury, matching the original's tier split):
+
+| Tier | Corporation |
+|---|---|
+| Economy | Nova Traders |
+| Economy | Kestrel Mining |
+| Standard | Orion Freight |
+| Standard | Helios Energy |
+| Standard | Vanguard Dynamics |
+| Luxury | Titan Industries |
+| Luxury | Zenith Consortium |
+
 ## Open / not yet decided
 
-- Exact set of space-theme names/reskins for chains, tiles, board terminology.
 - Number of AI opponents and difficulty levels.
 - AI algorithm approach (Monte Carlo Tree Search is the leading candidate based on research into existing Acquire implementations).
 - Save/resume support.
