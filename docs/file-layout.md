@@ -12,11 +12,12 @@ This splits the pure functions from `docs/game-engine-api.md` across files by co
 - **`js/model/merger.js`** — merger-specific logic: finding the largest chain(s) and detecting ties, calculating majority/minority bonuses (the 60/30 split and its tie-handling rules), building the shareholder-decision queue.
 - **`js/model/placement.js`** — `analyzePlacement()`, `isDeadTile()`, `getLegalPlacements()` — placement legality and outcome analysis, built on `board.js` + `corporations.js`.
 - **`js/model/game.js`** — the actual state-transition functions defined in `docs/game-engine-api.md`: `placeTile`, `foundCorporation`, `chooseMergerSurvivor`, `decideShareDisposition`, `buyShares`, `drawTile`, `exchangeDeadTile`, `endGame`, `isEndGameAvailable`, `getViewFor`. This is the orchestration layer that composes every file above it.
-- **`js/model/index.js`** — re-exports `game.js`'s public functions plus any constants UI/AI code needs, so consumers (`js/ui/`, `js/ai/`) have one clean import path and never need to reach into the individual concern files directly.
+- **`js/model/persistence.js`** — `serialize(gameState)`/`deserialize(json)` for save/resume (see `docs/persistence-design.md`), handling the `Map`/`Set` conversions that `board` and each corporation's `sectors` need.
+- **`js/model/index.js`** — re-exports `game.js`'s public functions, `persistence.js`'s `serialize`/`deserialize`, plus any constants UI/AI code needs, so consumers (`js/ui/`, `js/ai/`) have one clean import path and never need to reach into the individual concern files directly.
 
 ## Dependency direction
 
-`constants.js` depends on nothing. `board.js`, `corporations.js`, `players.js`, and `bank.js` depend only on `constants.js`. `merger.js` and `placement.js` depend on those. `game.js` depends on all of the above. `index.js` depends only on `game.js`. Nothing outside `js/model/` should import from anything but `index.js` — this keeps the internal split free to change later without breaking UI or AI code.
+`constants.js` depends on nothing. `board.js`, `corporations.js`, `players.js`, and `bank.js` depend only on `constants.js`. `merger.js` and `placement.js` depend on those. `game.js` depends on all of the above. `persistence.js` depends only on the `gameState` shape itself (no logic dependency on `game.js`). `index.js` depends on `game.js` and `persistence.js`. Nothing outside `js/model/` should import from anything but `index.js` — this keeps the internal split free to change later without breaking UI or AI code.
 
 ## Testing implication
 

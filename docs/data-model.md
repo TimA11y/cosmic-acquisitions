@@ -100,6 +100,12 @@ This model deliberately separates public state (`board`, `corporations`, `bank`,
 
 If true hidden-information enforcement ever became important, the stronger option would be running AI logic inside a Web Worker for real memory isolation from the main thread. Not needed for this project's scope (single human vs. local AI), but noted here as the escalation path if requirements change.
 
+## Serialization note
+
+`board`'s `Map` and each corporation's `sectors` `Set` don't survive `JSON.stringify`/`JSON.parse` directly — see `docs/persistence-design.md` for the `serialize()`/`deserialize()` conversion used for save/resume.
+
 ## See also
 
 `docs/game-engine-api.md` — the pure functions that read and transition this state (`placeTile`, `foundCorporation`, `chooseMergerSurvivor`, `decideShareDisposition`, `buyShares`, `drawTile`, `exchangeDeadTile`, `endGame`, and read-only helpers), plus the full `turnPhase` state machine.
+
+`docs/persistence-design.md` — save/resume via `localStorage`, and how this state shape serializes.

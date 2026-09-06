@@ -86,7 +86,10 @@ Configurable player count (2–6 total, one human + the rest AI), each AI oppone
 
 Both a full "How to Play" reference (a scrollable `<dialog>`, always reachable from the header) and phase-specific contextual hints (a collapsible `<details>` near the turn status, updating with `turnPhase`). See `docs/help-design.md`.
 
+## Save/resume support (confirmed 2026-09-05)
+
+Full game persistence to a single `localStorage` slot, auto-saved at the end of every turn. See `docs/persistence-design.md`.
+
 ## Open / not yet decided
 
-- Save/resume support.
 - Visual style/art direction.

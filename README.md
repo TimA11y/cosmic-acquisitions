@@ -50,6 +50,7 @@ projectx/
 - [docs/ai-design.md](docs/ai-design.md) — AI opponent difficulty tiers (random / heuristic / determinized MCTS) and how they use the game engine API
 - [docs/help-design.md](docs/help-design.md) — "How to Play" reference dialog and phase-specific contextual hints
 - [docs/file-layout.md](docs/file-layout.md) — `js/model/` file split, dependency direction, and BDD testing implications
+- [docs/persistence-design.md](docs/persistence-design.md) — save/resume via `localStorage`, save points, and `Map`/`Set` serialization
 
 ## Key design constraints
 
