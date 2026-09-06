@@ -17,6 +17,7 @@
     <header>
       <h1>Cosmic Acquisitions</h1>
       <p id="turn-status" aria-live="polite">Setting up a new game&hellip;</p>
+      <button id="new-game-button" type="button" hidden>New Game</button>
     </header>
 
     <!--
@@ -83,6 +84,32 @@
       like the three decision dialogs below (no way to "cancel" starting a
       game). js/ui/main.js only calls createGame() once this is submitted.
     -->
+    <!--
+      Shown at load INSTEAD of setup-dialog when a save exists (see
+      js/ui/storage.js's loadSavedGame()) — mandatory, same reasoning as
+      setup-dialog: there's nothing to fall back to yet if dismissed.
+    -->
+    <dialog id="resume-dialog">
+      <p>A saved game was found.</p>
+      <div class="dialog-actions">
+        <button id="new-game-from-resume-button" type="button">Start New Game</button>
+        <button id="resume-game-button" type="button">Resume Game</button>
+      </div>
+    </dialog>
+
+    <!--
+      Opened by the header's New Game button mid-play. NOT mandatory —
+      nothing has been committed yet when it's open (same reasoning as
+      placement-dialog), so Escape/Cancel safely close it with no effect.
+    -->
+    <dialog id="confirm-new-game-dialog">
+      <p>Start a new game? Your current progress will be lost.</p>
+      <div class="dialog-actions">
+        <button id="confirm-new-game-cancel" type="button">Cancel</button>
+        <button id="confirm-new-game-start" type="button">Start New Game</button>
+      </div>
+    </dialog>
+
     <dialog id="setup-dialog">
       <h2>New Game Setup</h2>
       <div class="setup-field">

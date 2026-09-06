@@ -287,3 +287,43 @@ Then("ending the game is available", async ({ page }) => {
   const available = await page.evaluate(() => window.CosmicModel.isEndGameAvailable(window.gameState));
   expect(available).toBe(true);
 });
+
+// --- Persistence (save/resume) -------------------------------------------
+
+When("the game is serialized and deserialized", async ({ page }) => {
+  await page.evaluate(() => {
+    const json = window.CosmicModel.serialize(window.gameState);
+    window.gameState = window.CosmicModel.deserialize(json);
+  });
+});
+
+Then("the board is a real Map after deserializing", async ({ page }) => {
+  const isMap = await page.evaluate(() => window.gameState.board instanceof Map);
+  expect(isMap).toBe(true);
+});
+
+Then("sector {string} belongs to {string}", async ({ page }, sectorId, corporationId) => {
+  const actual = await page.evaluate((sId) => window.gameState.board.get(sId)?.corporationId, sectorId);
+  expect(actual).toBe(corporationId);
+});
+
+Given("a save with schema version {int}", async ({ page }, version) => {
+  await page.evaluate((v) => {
+    const json = window.CosmicModel.serialize(window.gameState);
+    const parsed = JSON.parse(json);
+    parsed.schemaVersion = v;
+    window.badSaveJson = JSON.stringify(parsed);
+  }, version);
+});
+
+Then("deserializing it throws an error", async ({ page }) => {
+  const threw = await page.evaluate(() => {
+    try {
+      window.CosmicModel.deserialize(window.badSaveJson);
+      return false;
+    } catch {
+      return true;
+    }
+  });
+  expect(threw).toBe(true);
+});

@@ -19,6 +19,13 @@ export default [
       sourceType: "module",
       globals: globals.browser,
     },
+    rules: {
+      // Destructuring a key out of an object just to omit it from the rest
+      // (js/model/persistence.js's deserialize() stripping schemaVersion
+      // before returning gameState) is a deliberate, legitimate pattern —
+      // not an unused variable to flag.
+      "no-unused-vars": ["error", { ignoreRestSiblings: true }],
+    },
   },
   {
     files: ["playwright.config.js", "eslint.config.js", "scripts/**/*.mjs"],

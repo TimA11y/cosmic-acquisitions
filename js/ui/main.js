@@ -39,6 +39,7 @@ import {
   renderFinalStandings,
   renderSetupAiRows,
 } from "./render.js";
+import { loadSavedGame, saveGame, clearSavedGame } from "./storage.js";
 
 const HUMAN_ID = "you";
 const AI_TURN_DELAY_MS = 500;
@@ -46,6 +47,13 @@ const AI_TURN_DELAY_MS = 500;
 const elements = {
   turnStatus: document.getElementById("turn-status"),
   noticeMessage: document.getElementById("notice-message"),
+  newGameButton: document.getElementById("new-game-button"),
+  resumeDialog: document.getElementById("resume-dialog"),
+  resumeGameButton: document.getElementById("resume-game-button"),
+  newGameFromResumeButton: document.getElementById("new-game-from-resume-button"),
+  confirmNewGameDialog: document.getElementById("confirm-new-game-dialog"),
+  confirmNewGameCancel: document.getElementById("confirm-new-game-cancel"),
+  confirmNewGameStart: document.getElementById("confirm-new-game-start"),
   setupDialog: document.getElementById("setup-dialog"),
   setupPlayerCount: document.getElementById("setup-player-count"),
   setupHumanName: document.getElementById("setup-human-name"),
@@ -143,6 +151,7 @@ function makeMandatory(dialogEl, explanation) {
   });
 }
 
+makeMandatory(elements.resumeDialog, "You must resume or start a game to continue.");
 makeMandatory(elements.setupDialog, "You must start a game to continue.");
 makeMandatory(elements.foundingDialog, "You must choose a corporation to continue.");
 makeMandatory(elements.mergerSurvivorDialog, "You must choose which corporation survives to continue.");
@@ -150,6 +159,48 @@ makeMandatory(
   elements.shareDispositionDialog,
   "You must decide what to do with these shares to continue.",
 );
+
+// --- Save / resume / new game --------------------------------------------
+
+function showSetupDialog() {
+  renderSetupAiRows(Number(elements.setupPlayerCount.value), elements.setupAiRows);
+  elements.setupDialog.showModal();
+}
+
+let pendingResumeState = null;
+
+elements.resumeGameButton.addEventListener("click", () => {
+  gameState = pendingResumeState;
+  pendingResumeState = null;
+  elements.resumeDialog.close();
+  elements.newGameButton.hidden = false;
+  render();
+  maybeStartAiTurn();
+});
+
+elements.newGameFromResumeButton.addEventListener("click", () => {
+  clearSavedGame();
+  elements.resumeDialog.close();
+  showSetupDialog();
+});
+
+elements.newGameButton.addEventListener("click", () => {
+  elements.confirmNewGameDialog.showModal();
+});
+
+elements.confirmNewGameCancel.addEventListener("click", () => {
+  elements.confirmNewGameDialog.close();
+});
+
+elements.confirmNewGameStart.addEventListener("click", () => {
+  clearSavedGame();
+  gameState = null;
+  aiDifficulties = {};
+  elements.confirmNewGameDialog.close();
+  elements.gameOverSection.hidden = true;
+  clearNotice();
+  showSetupDialog();
+});
 
 // --- Setup dialog -----------------------------------------------------
 
@@ -173,6 +224,7 @@ elements.setupStartButton.addEventListener("click", () => {
 
   gameState = createGame(playerConfigs);
   elements.setupDialog.close();
+  elements.newGameButton.hidden = false;
   render();
   maybeStartAiTurn();
 });
@@ -371,6 +423,7 @@ function handleBuyShares(corporationId) {
 function handleEndTurn() {
   try {
     gameState = drawTile(gameState, HUMAN_ID);
+    saveGame(gameState); // autosave checkpoint, per docs/persistence-design.md
   } catch (error) {
     console.error(error);
   }
@@ -381,6 +434,7 @@ function handleEndTurn() {
 function handleEndGame() {
   try {
     gameState = endGame(gameState, HUMAN_ID);
+    clearSavedGame(); // nothing left to resume into once the game is over
   } catch (error) {
     console.error(error);
   }
@@ -449,6 +503,7 @@ function finishAiTurn(aiPlayerId) {
 
   setTimeout(() => {
     gameState = drawTile(gameState, aiPlayerId);
+    saveGame(gameState); // autosave checkpoint, per docs/persistence-design.md
     render();
     maybeStartAiTurn();
   }, AI_TURN_DELAY_MS);
@@ -472,5 +527,9 @@ window.__setTestGameState = (state) => {
 
 // --- Go ------------------------------------------------------------------
 
-renderSetupAiRows(Number(elements.setupPlayerCount.value), elements.setupAiRows);
-elements.setupDialog.showModal();
+pendingResumeState = loadSavedGame();
+if (pendingResumeState !== null) {
+  elements.resumeDialog.showModal();
+} else {
+  showSetupDialog();
+}
