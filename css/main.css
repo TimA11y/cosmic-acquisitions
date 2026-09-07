@@ -88,6 +88,57 @@
   }
 }
 
+/* Star Map "transporter beam-in" reveal, played once when a sector is
+   ACTUALLY newly placed (js/ui/render.js's previouslyOccupiedSectors diff
+   decides this — see .just-revealed usage below). Two parts: the star
+   itself materializes (fade/scale/glow settling to its normal static
+   glow), while a separate ::after pseudo-element on the <td> sweeps a
+   cyan band down through the cell to sell the "beaming down" look.
+   ~550ms, single pass, ease-out — nowhere near the 3-flashes/second
+   threshold above. */
+@keyframes tile-materialize {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+    text-shadow:
+      0 0 10px var(--color-economy),
+      0 0 20px var(--color-economy);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+    text-shadow:
+      0 0 14px var(--color-economy),
+      0 0 26px var(--color-economy);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+
+    /* Settles into .sector-star's own static glow (0 0 3px currentcolor)
+       so the animation's end state hands off seamlessly. */
+    text-shadow: 0 0 3px currentcolor;
+  }
+}
+
+@keyframes tile-beam-sweep {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0.9;
+  }
+
+  70% {
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -450,6 +501,14 @@ button:hover:not([aria-disabled="true"], :disabled) {
   width: 24px;
   height: 24px;
   font-size: 0.75rem;
+
+  /* Containing block for .just-revealed's ::after sweep pseudo-element
+     below — needs to be on the <td> (block-level), not the inline
+     .sector-star span itself. overflow: hidden clips the sweep band to
+     this cell's own bounds; without it, the band's translateY animation
+     visibly bleeds into the cell above/below during the sweep. */
+  position: relative;
+  overflow: hidden;
 }
 
 #star-map td button {
@@ -462,6 +521,19 @@ button:hover:not([aria-disabled="true"], :disabled) {
   border: 1px solid var(--color-text);
   cursor: pointer;
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* "Something goes here" glyph for a placeable-but-not-yet-placed cell —
+   pure CSS generated content, so it needs no HTML/JS of its own. Safe
+   accessibility-wise: CSS ::before content is never exposed to the
+   accessibility tree, and the button already has an explicit
+   aria-label ("Place Sector X"), so this can't create a duplicate or
+   conflicting announcement. */
+#star-map td button::before {
+  content: "?";
+  color: var(--color-text);
+  opacity: 0.6;
+  font-weight: bold;
 }
 
 #star-map td button:hover {
@@ -479,6 +551,35 @@ button:hover:not([aria-disabled="true"], :disabled) {
      hidden text alongside it in each cell). */
   font-style: normal;
   text-shadow: 0 0 3px currentcolor;
+}
+
+.sector-star.just-revealed {
+  animation: tile-materialize 550ms ease-out;
+}
+
+/* The sweep band itself. js/ui/render.js puts this same class on the <td>
+   (not just the inner .sector-star span) specifically so this can target
+   it directly here, positioned relative to `position: relative` on
+   #star-map td above — an absolutely positioned pseudo-element can't
+   cleanly hang off the inline .sector-star span itself. */
+#star-map td.just-revealed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, var(--color-economy) 45%, transparent 90%);
+  opacity: 0;
+  pointer-events: none;
+  animation: tile-beam-sweep 450ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sector-star.just-revealed {
+    animation: none;
+  }
+
+  #star-map td.just-revealed::after {
+    animation: none;
+  }
 }
 
 .sector-star[aria-hidden="true"] {

@@ -34,6 +34,7 @@ import {
   renderFinalStandings,
   renderSetupAiRows,
   renderContextualHint,
+  resetRevealAnimationState,
 } from "./render.js";
 import { loadSavedGame, saveGame, clearSavedGame } from "./storage.js";
 
@@ -209,6 +210,10 @@ let pendingResumeState = null;
 elements.resumeGameButton.addEventListener("click", () => {
   gameState = pendingResumeState;
   pendingResumeState = null;
+  // Seed with the restored board's already-occupied sectors, not empty —
+  // otherwise every previously-placed tile would incorrectly "beam in"
+  // at once on load instead of just appearing.
+  resetRevealAnimationState(getViewFor(gameState, HUMAN_ID));
   elements.resumeDialog.close();
   elements.newGameButton.hidden = false;
   render();
@@ -260,6 +265,9 @@ elements.setupStartButton.addEventListener("click", () => {
   });
 
   gameState = createGame(playerConfigs);
+  // A brand-new board has nothing occupied yet, so this player's very
+  // first placements DO play the reveal animation.
+  resetRevealAnimationState();
   elements.setupDialog.close();
   elements.newGameButton.hidden = false;
   render();
@@ -567,6 +575,7 @@ function finishAiTurn(aiPlayerId) {
 window.__getTestGameState = () => gameState;
 window.__setTestGameState = (state) => {
   gameState = state;
+  resetRevealAnimationState(getViewFor(gameState, HUMAN_ID));
   render();
 };
 

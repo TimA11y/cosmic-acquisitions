@@ -22,6 +22,53 @@ function isCurrentPlayer(view, playerId) {
   return view.players[view.currentPlayerIndex].id === playerId;
 }
 
+/**
+ * Sectors considered "old news" — excluded from the reveal animation on
+ * ANY render, including redundant re-renders of the current board.
+ * Necessary because renderStarMap() rebuilds the entire table on every
+ * render() call (see its own doc comment) — without this, a CSS
+ * reveal-animation class applied at element-creation time would replay for
+ * every already-occupied cell on every unrelated render (buying a share,
+ * an AI's turn elsewhere on the board, etc.), not just the cell that
+ * actually just changed.
+ *
+ * This lags the *current* render's board by a full generation on purpose:
+ * main.js's own render flow calls render() more than once in a row for the
+ * exact same gameState in the common case (continueMergerResolution always
+ * calls render() itself, then its caller calls render() again) —
+ * getViewFor() passes `board` through by reference unchanged, so
+ * view.board is reference-identical across those redundant calls. A
+ * naive "fold the current board's occupied set in as soon as we see it"
+ * approach folds it in during the very render that's supposed to be
+ * showing the reveal, so the very next (redundant) render already treats
+ * it as old and wipes the freshly-animated DOM node before the animation
+ * has any chance to play — caught via manual browser verification, not
+ * assumed. Instead, a board's occupied sectors are only folded into
+ * settledOccupiedSectors once we've moved to a DIFFERENT board after it —
+ * so every render of the SAME board (redundant or not) keeps treating that
+ * generation's newly-occupied sectors as newly revealed, and only the
+ * generation AFTER that stops re-flagging them.
+ */
+let settledOccupiedSectors = new Set();
+let currentGenerationBoard = null;
+let currentGenerationOccupiedSectors = new Set();
+
+/**
+ * Call whenever gameState is replaced wholesale (new game, resume from
+ * save, or the BDD test hook's __setTestGameState) — never inferred
+ * automatically, since renderStarMap() has no way to distinguish "this is
+ * a fresh game" from "the human just placed a tile" on its own. Pass an
+ * empty view (or omit) for a brand-new game so the very first placements
+ * do play the reveal animation; pass the actual restored/seeded view
+ * otherwise so already-placed tiles don't incorrectly "beam in" on load.
+ */
+export function resetRevealAnimationState(view) {
+  const occupied = view ? new Set(view.board.keys()) : new Set();
+  settledOccupiedSectors = occupied;
+  currentGenerationBoard = view ? view.board : null;
+  currentGenerationOccupiedSectors = occupied;
+}
+
 /** Header's aria-live turn-status line — the only place turn changes are announced. */
 export function renderTurnStatus(view, humanId, statusEl) {
   if (view.turnPhase === "gameOver") {
@@ -85,15 +132,22 @@ export function renderStarMap(view, humanId, tableEl, onPlaceableCellClick) {
       const sector = view.board.get(sectorId);
 
       if (sector) {
+        // Only the tile that's ACTUALLY appearing for the first time this
+        // render plays the reveal animation — a tile already on the board
+        // that's merely recoloring (e.g. swept into a corporation that just
+        // grew past it) is not newly revealed, so it stays instant.
+        const isNewlyRevealed = !settledOccupiedSectors.has(sectorId);
+        const revealClass = isNewlyRevealed ? " just-revealed" : "";
+        if (isNewlyRevealed) td.classList.add("just-revealed");
         if (sector.corporationId === null) {
           td.innerHTML =
-            `<span class="sector-star" aria-hidden="true">★</span>` +
+            `<span class="sector-star${revealClass}" aria-hidden="true">★</span>` +
             `<span class="visually-hidden">Sector ${sectorId}, unincorporated</span>`;
         } else {
           const corporation = view.corporations[sector.corporationId];
           const initial = corporation.name.charAt(0);
           td.innerHTML =
-            `<span class="sector-star tier-${corporation.tier}" aria-hidden="true">★</span>` +
+            `<span class="sector-star tier-${corporation.tier}${revealClass}" aria-hidden="true">★</span>` +
             `<span class="tier-${corporation.tier}">${initial}</span>` +
             `<span class="visually-hidden">Sector ${sectorId}, part of ${corporation.name}</span>`;
         }
@@ -112,6 +166,14 @@ export function renderStarMap(view, humanId, tableEl, onPlaceableCellClick) {
     tbody.appendChild(tr);
   }
   tableEl.appendChild(tbody);
+
+  if (view.board !== currentGenerationBoard) {
+    // Moving to a genuinely new board generation: the PREVIOUS generation
+    // (not this one) is now definitely settled, since we've moved past it.
+    settledOccupiedSectors = new Set([...settledOccupiedSectors, ...currentGenerationOccupiedSectors]);
+    currentGenerationBoard = view.board;
+    currentGenerationOccupiedSectors = new Set(view.board.keys());
+  }
 }
 
 /**
