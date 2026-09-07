@@ -23,5 +23,7 @@ If a `localStorage` write fails (quota exceeded, or restrictions in some browser
 
 ## Open questions for the next design step
 
-- Exact copy/behavior of the "Resume Game" / "New Game" dialog.
-- Whether to version the saved data shape (e.g. a `schemaVersion` field) so a future change to `gameState`'s structure can detect and discard incompatible old saves rather than failing to load them.
+None remaining. Both are resolved:
+
+- **Resume/New Game dialog copy**: `#resume-dialog` ("A saved game was found." with "Start New Game"/"Resume Game" buttons) and `#confirm-new-game-dialog` ("Start a new game? Your current progress will be lost." with "Cancel"/"Start New Game" buttons) in `index.html`.
+- **Save schema versioning**: `js/model/persistence.js` stamps a `SCHEMA_VERSION` (currently `1`); `deserialize()` throws on mismatch, which `js/ui/storage.js` treats as "no save."

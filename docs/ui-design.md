@@ -124,7 +124,9 @@ Buy buttons are appended to each **active** corporation's row in the **Market** 
 
 ## Open questions for the next design step
 
-- Exact CSS breakpoints and table layout (e.g. horizontal scroll container) for narrow viewports — table must remain a real `<table>` at every width; pinch-to-zoom must never be disabled (no `user-scalable=no`/`maximum-scale=1`), per WCAG 1.4.10 Reflow.
-- Visual style/color palette (must meet WCAG 2.2 AA contrast ratios; color alone is never the sole indicator of corporation identity, per the Star Map design above).
-- Exact wording for each mandatory dialog beyond the illustrative examples above.
+None remaining. All three are resolved:
+
+- **Narrow-viewport table layout**: `.star-map-scroll`/`.market-scroll` wrapper divs (`overflow-x: auto`) around both tables in `index.html`/`css/main.css` — the table itself never shrinks below its 24px-per-cell touch-target minimum, and only the wrapper scrolls horizontally, not the page (WCAG 1.4.10). Pinch-to-zoom was never restricted.
+- **Visual style/color palette**: finalized in `docs/visual-design.md`'s "Palette roles" section, with real WCAG 2.2 contrast ratios computed for every color, and implemented as CSS custom properties in `css/main.css`.
+- **Exact mandatory-dialog wording**: audited 2026-09-07 against every actual dialog message in `js/ui/main.js`/`js/ui/render.js`/`index.html` — placement-confirmation's four outcome cases, all five mandatory-dialog cancel explanations, the share-disposition validation messages, and the buy-share/purchase-count copy all match (or, in one case — the "grow" placement message specifying "sectors after" instead of the doc's ambiguous "sectors" — improve on) the illustrative examples above.
 - How AI turns are visually/audibly represented while "thinking" (e.g. a brief delay + status text vs. instant resolution).

@@ -25,4 +25,5 @@ Cyberpunk UIs commonly lean on glitch effects, scanlines, and pulsing/flickering
 ## Open questions for the next design step
 
 - A distinctive self-hosted display typeface for headings (body text should stay on the system stack regardless, for readability).
-- Exact glow/glitch/scanline effect treatments, scoped by the motion constraints above — `js/ui/`'s first pass has no motion effects yet beyond simple, `prefers-reduced-motion`-respecting hover/focus transitions.
+
+Resolved: **glow/glitch/scanline effect treatments**. `css/main.css` now has a slow neon glow pulse on the header title, a static glow on button hover/`:focus-visible`, a tier-colored static glow on Star Map star glyphs, and a `body::before` animated CRT scanline overlay. Glitch effects specifically were left out — harder to keep unambiguously compliant with the no-flashing-over-3x/second rule for no real payoff over glow+scanline. Every animated piece has a verified `prefers-reduced-motion` fallback that removes the animation entirely.
