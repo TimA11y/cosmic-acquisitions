@@ -343,10 +343,26 @@ export function renderContextualHint(view, humanId, elements) {
     `<button type="button" class="link-button" data-help-section="${hint.sectionId}">Learn more</button>`;
 }
 
-/** The public Event Log — also feeds an aria-live region (see index.html). */
+/**
+ * The public Event Log — also feeds an `aria-live="polite"` region (see
+ * index.html). `eventLog` only ever grows within a single game (every
+ * write goes through game.js's `appendEvent()`, which spreads the prior
+ * log rather than truncating or editing it), so `listEl.children.length`
+ * doubles as "how many entries are already rendered" — no separate
+ * render-cursor state needed. We must append-only rather than clearing
+ * and rebuilding the list on every call: a live region announces
+ * whatever changed since the last mutation, so a full innerHTML rebuild
+ * on every render() (which runs after *every* action) makes screen
+ * readers re-read the entire log from the top instead of just the
+ * newest line. The one exception is New Game, which resets eventLog to
+ * `[]` — detected here as the log being *shorter* than what's rendered,
+ * which is the signal to actually clear and start over.
+ */
 export function renderEventLog(view, listEl) {
-  listEl.innerHTML = "";
-  for (const entry of view.eventLog) {
+  if (view.eventLog.length < listEl.children.length) {
+    listEl.innerHTML = "";
+  }
+  for (const entry of view.eventLog.slice(listEl.children.length)) {
     const li = document.createElement("li");
     li.textContent = entry.message;
     listEl.appendChild(li);
