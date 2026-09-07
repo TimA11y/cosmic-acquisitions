@@ -41,9 +41,23 @@
     <main>
       <section id="star-map" aria-labelledby="star-map-heading">
         <h2 id="star-map-heading">Star Map</h2>
-        <table id="star-map-table">
-          <caption>Star Map</caption>
-        </table>
+        <!--
+          Scroll container for narrow viewports (docs/ui-design.md's open
+          "table layout for narrow viewports" question): the 12-column table
+          can't shrink below its per-cell 24x24 CSS px touch-target minimum
+          (R13), so at phone widths it's wider than the viewport. Per WCAG
+          1.4.10 Reflow, data tables are explicitly exempt from the
+          no-two-dimensional-scrolling rule since 2D layout is essential to
+          reading tabular data — the correct technique is to scope the
+          horizontal scrolling to the table itself (not the whole page).
+          The table stays a real <table> the whole time; only this wrapper
+          scrolls.
+        -->
+        <div class="star-map-scroll">
+          <table id="star-map-table">
+            <caption>Star Map</caption>
+          </table>
+        </div>
       </section>
 
       <section id="your-ship" aria-labelledby="your-ship-heading">
@@ -62,20 +76,26 @@
       <section id="market" aria-labelledby="market-heading">
         <h2 id="market-heading">Market</h2>
         <p id="share-purchase-status" aria-live="polite"></p>
-        <table id="market-table">
-          <thead>
-            <tr>
-              <th scope="col">Corporation</th>
-              <th scope="col">Tier</th>
-              <th scope="col">Sectors</th>
-              <th scope="col">Secure</th>
-              <th scope="col">Price</th>
-              <th scope="col">Shares left</th>
-              <th scope="col">Buy</th>
-            </tr>
-          </thead>
-          <tbody id="market-table-body"></tbody>
-        </table>
+        <!-- Same narrow-viewport scroll wrapper as .star-map-scroll above,
+             and for the same reason: 7 columns of real data plus a Buy
+             button per row don't fit a phone-width viewport, and WCAG
+             1.4.10 exempts data tables from the no-2D-scrolling rule. -->
+        <div class="market-scroll">
+          <table id="market-table">
+            <thead>
+              <tr>
+                <th scope="col">Corporation</th>
+                <th scope="col">Tier</th>
+                <th scope="col">Sectors</th>
+                <th scope="col">Secure</th>
+                <th scope="col">Price</th>
+                <th scope="col">Shares left</th>
+                <th scope="col">Buy</th>
+              </tr>
+            </thead>
+            <tbody id="market-table-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section id="event-log" aria-labelledby="event-log-heading">

@@ -26,6 +26,20 @@
   box-sizing: border-box;
 }
 
+/* Defensive backstop for WCAG 1.4.10 Reflow: .star-map-scroll and
+   .market-scroll are the only elements meant to scroll horizontally.
+   Nested overflow:auto containers are supposed to stop their content's
+   min-content width from inflating an ancestor flex item's automatic
+   minimum size, but that isn't fully reliable across engines in
+   practice — this closes the gap without touching pinch-to-zoom
+   (no touch-action/user-scalable restriction here). Set on <html>, not
+   <body>: the root scrolling box in standard mode is documentElement,
+   so overflow-x on body alone doesn't stop the page itself from
+   growing a horizontal scrollbar. */
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   background: var(--color-bg);
@@ -44,10 +58,20 @@ body {
   position: relative;
 }
 
+/* Same clip-path technique as .visually-hidden below, not the classic
+   left: -9999px off-screen trick — that old technique creates negative
+   scrollable overflow that inflates the page's scrollWidth and can trigger
+   page-level horizontal scroll at narrow viewports, which is exactly what
+   the narrow-viewport work here is trying to eliminate. */
 .skip-links a {
   position: absolute;
-  left: -9999px;
   top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   background: var(--color-bg);
   color: var(--color-text);
   padding: 0.5em 1em;
@@ -56,6 +80,11 @@ body {
 }
 
 .skip-links a:focus {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
   left: 0.5em;
   top: 0.5em;
 }
@@ -254,9 +283,22 @@ button:hover:not([aria-disabled="true"], :disabled) {
 
 /* ---------------------------------------------------------------------- */
 
+/* Only this wrapper scrolls horizontally, not the page (WCAG 1.4.10) — see
+   the comment on .star-map-scroll in index.html for why the table itself
+   can't just shrink to fit a phone-width viewport. */
+.star-map-scroll {
+  overflow-x: auto;
+}
+
 #star-map table {
   border-collapse: collapse;
   width: 100%;
+  /* Still stretches to fill its container on wide viewports (unchanged
+     from before), but won't compress cells below their natural 24px
+     min-width (R13) when the container is narrower than that — instead
+     the table overflows .star-map-scroll, which is what makes that
+     wrapper's horizontal scroll kick in on phone widths. */
+  min-width: max-content;
 }
 
 #star-map caption {
@@ -339,6 +381,10 @@ button:hover:not([aria-disabled="true"], :disabled) {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.market-scroll {
+  overflow-x: auto;
 }
 
 .corporation-list li {

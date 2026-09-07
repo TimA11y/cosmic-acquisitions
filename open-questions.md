@@ -4,7 +4,6 @@ A consolidated view across all of `docs/*.md`'s individual "Open questions for t
 
 ## Deliberate, known limitations
 
-- **AI difficulty is fixed per game.** `js/ui/main.js`'s `aiDifficulties` map is only populated at setup time; there's no way to change an opponent's tier mid-session. This matches `docs/ai-design.md`'s default assumption, not an oversight.
 - **Hard AI's MCTS budget is an untuned first pass.** `js/ai/hard.js` uses `TOTAL_TIME_BUDGET_MS = 400`, `DETERMINIZATION_COUNT = 5`, `MAX_ROLLOUT_PLIES = 6` — reasonable starting values, not validated against real play. Worth revisiting if the tier feels too weak or turns feel slow. (`docs/ai-design.md`)
 
 ## Known bugs
@@ -15,7 +14,7 @@ None currently tracked. The previous entry — the Event Log's `aria-live` regio
 
 - **No self-hosted display typeface.** Headings and body text both currently use a system-font stack; `docs/visual-design.md` envisioned a more distinctive self-hosted face for headings specifically (body text staying on system fonts either way, for readability).
 - **No glow/glitch/scanline motion effects.** Only basic `prefers-reduced-motion`-respecting hover/focus transitions exist so far — the fuller neon-cyberpunk motion treatment described in `docs/visual-design.md` was never built.
-- **No dedicated narrow-viewport (phone) breakpoints.** `css/main.css` has a single 900px layout breakpoint; the Star Map table's behavior on genuinely narrow/mobile screens (horizontal scroll container, etc.) per `docs/ui-design.md` was never specifically addressed or tested.
+- ~~No dedicated narrow-viewport (phone) breakpoints.~~ **Fixed.** The Star Map and Market tables can't shrink below their per-cell 24px touch-target minimum (R13), so both now sit inside their own `.star-map-scroll`/`.market-scroll` wrapper (`overflow-x: auto`) instead of forcing the whole page to scroll sideways — WCAG 1.4.10 Reflow explicitly exempts data tables from the no-2D-scrolling rule, but scopes the exemption to the table itself, not the page. Verified at a 320px viewport (the Reflow reference width): a real wheel gesture can scroll the table wrapper but cannot move the page itself. Along the way, also fixed a pre-existing, unrelated bug this surfaced: the skip-links used the classic `left: -9999px` off-screen-hiding technique, which creates negative scrollable overflow that was *already* inflating the page's horizontal scroll region at narrow widths, independent of the table issue — replaced with the same `clip-path` technique `.visually-hidden` already used elsewhere in this codebase.
 - **Mandatory dialog copy wasn't audited against the original design doc's list.** Real wording exists for every dialog now, filled in during implementation, but nobody went back to check it against `docs/ui-design.md`'s original "exact wording" open item.
 
 ## Process
