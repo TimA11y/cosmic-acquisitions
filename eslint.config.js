@@ -28,6 +28,22 @@ export default [
     },
   },
   {
+    // Every AI tier (js/ai/easy.js, medium.js, ...) shares one function
+    // signature per decision point (see js/ai/index.js's getAiStrategy()),
+    // so a simpler tier's implementation can legitimately ignore an
+    // argument a smarter tier needs (e.g. easy's chooseCorporationToFound
+    // never looks at playerId, only medium does).
+    files: ["js/ai/**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: globals.browser,
+    },
+    rules: {
+      "no-unused-vars": ["error", { args: "none" }],
+    },
+  },
+  {
     files: ["playwright.config.js", "eslint.config.js", "scripts/**/*.mjs"],
     languageOptions: {
       ecmaVersion: 2022,

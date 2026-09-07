@@ -1,6 +1,7 @@
 // Entry point. Wires index.html's DOM to js/model/'s pure engine functions
-// and drives 1-5 stub easy-tier AI opponents (js/ai/easy.js), player count
-// and names chosen via the setup dialog on load. Covers the full turnPhase
+// and drives 1-5 AI opponents (js/ai/easy.js, js/ai/medium.js, dispatched
+// per player by js/ai/index.js's getAiStrategy()), player count, names, and
+// difficulty chosen via the setup dialog on load. Covers the full turnPhase
 // state machine: placing tiles, founding corporations, resolving mergers
 // (including tie-breaking survivor choice and every shareholder's
 // sell/trade/hold decision), buying shares, ending turns, and voluntarily
@@ -20,13 +21,7 @@ import {
   analyzePlacement,
   isDeadTile,
 } from "../model/index.js";
-import {
-  choosePlacementAction,
-  chooseRandomCorporationToFound,
-  chooseRandomMergerSurvivor,
-  decideSellEverything,
-  chooseRandomShareBuy,
-} from "../ai/easy.js";
+import { getAiStrategy } from "../ai/index.js";
 import {
   renderTurnStatus,
   renderStarMap,
@@ -101,10 +96,12 @@ let gameState = null;
 
 // Per-AI-player difficulty, keyed by player id — kept here rather than on
 // the model's Player object, since it's AI-dispatch metadata the engine
-// itself has no use for. Only "easy" does anything today (js/ai/easy.js is
-// the only tier built); Medium/Hard are offered in the setup dialog per
-// docs/ai-design.md's confirmed 3-tier design, but disabled there, so this
-// map will only ever actually contain "easy" until those tiers exist.
+// itself has no use for. Looked up via js/ai/index.js's getAiStrategy() at
+// every AI decision point. "Easy" and "Medium" are real tiers now; "Hard"
+// is still offered in the setup dialog per docs/ai-design.md's confirmed
+// 3-tier design but disabled there (MCTS is a separate, larger pass) — if
+// it were ever selected anyway (or a resumed save has no entry at all),
+// getAiStrategy() falls back to easy rather than crashing.
 let aiDifficulties = {};
 
 let pendingPlacementSectorId = null;
@@ -391,11 +388,12 @@ function isHumanPlayer(playerId) {
 
 /**
  * Resolves every AI-held share-disposition decision at the front of the
- * queue automatically (the easy tier's fixed "sell everything" rule), no
- * matter which AI player holds them or whose turn triggered the merger —
- * with 1-5 AI opponents now possible (docs/ai-design.md's 2-6 total player
- * design), this can no longer assume a single fixed AI id. Stops the
- * instant the front of the queue belongs to the human.
+ * queue automatically — using each AI's OWN difficulty tier's judgment
+ * (js/ai/index.js's getAiStrategy()), not a single fixed rule — no matter
+ * which AI player holds them or whose turn triggered the merger. With 1-5
+ * AI opponents now possible (docs/ai-design.md's 2-6 total player design),
+ * this can no longer assume a single fixed AI id or a single tier. Stops
+ * the instant the front of the queue belongs to the human.
  */
 function autoResolveAiMergerDecisions() {
   while (
@@ -406,7 +404,14 @@ function autoResolveAiMergerDecisions() {
     const { playerId, corporationId } = gameState.pendingMerger.shareholderDecisions[0];
     const aiPlayer = gameState.players.find((p) => p.id === playerId);
     const shareCount = aiPlayer.shares[corporationId] ?? 0;
-    gameState = decideShareDisposition(gameState, playerId, corporationId, decideSellEverything(shareCount));
+    const strategy = getAiStrategy(aiDifficulties[playerId]);
+    const decision = strategy.decideDisposition(
+      getViewFor(gameState, playerId),
+      playerId,
+      corporationId,
+      shareCount,
+    );
+    gameState = decideShareDisposition(gameState, playerId, corporationId, decision);
   }
 }
 
@@ -483,12 +488,6 @@ function handleEndGame() {
 
 // --- AI turn driver ---------------------------------------------------
 
-// Every AI decision call below routes through js/ai/easy.js regardless of
-// aiDifficulties[playerId] — that map only ever holds "easy" today since
-// Medium/Hard are disabled in the setup dialog. Once a medium/hard tier
-// module exists, this is the one place that would dispatch on difficulty
-// instead of always importing from ../ai/easy.js.
-
 function maybeStartAiTurn() {
   if (gameState.turnPhase === "gameOver") return;
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -497,7 +496,8 @@ function maybeStartAiTurn() {
 }
 
 function runAiTurn(aiPlayerId) {
-  const placementAction = choosePlacementAction(getViewFor(gameState, aiPlayerId), aiPlayerId);
+  const strategy = getAiStrategy(aiDifficulties[aiPlayerId]);
+  const placementAction = strategy.choosePlacementAction(getViewFor(gameState, aiPlayerId), aiPlayerId);
 
   try {
     if (placementAction.action === "exchange") {
@@ -514,12 +514,12 @@ function runAiTurn(aiPlayerId) {
   }
 
   if (gameState.turnPhase === "choosingCorporationToFound") {
-    const corporationId = chooseRandomCorporationToFound(getViewFor(gameState, aiPlayerId));
+    const corporationId = strategy.chooseCorporationToFound(getViewFor(gameState, aiPlayerId), aiPlayerId);
     gameState = foundCorporation(gameState, corporationId);
   }
 
   if (gameState.turnPhase === "choosingMergerSurvivor") {
-    const corporationId = chooseRandomMergerSurvivor(getViewFor(gameState, aiPlayerId));
+    const corporationId = strategy.chooseMergerSurvivor(getViewFor(gameState, aiPlayerId), aiPlayerId);
     gameState = chooseMergerSurvivor(gameState, corporationId);
   }
 
@@ -531,7 +531,8 @@ function runAiTurn(aiPlayerId) {
 }
 
 function finishAiTurn(aiPlayerId) {
-  const buyChoice = chooseRandomShareBuy(getViewFor(gameState, aiPlayerId), aiPlayerId);
+  const strategy = getAiStrategy(aiDifficulties[aiPlayerId]);
+  const buyChoice = strategy.chooseShareBuy(getViewFor(gameState, aiPlayerId), aiPlayerId);
   if (buyChoice) {
     try {
       gameState = buyShares(gameState, aiPlayerId, buyChoice.corporationId, buyChoice.quantity);

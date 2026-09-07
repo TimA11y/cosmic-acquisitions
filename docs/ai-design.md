@@ -19,15 +19,19 @@ Every AI decision function is only ever given `getViewFor(gameState, aiPlayerId)
 
 This is the cheapest tier to build and a reasonable baseline opponent — worth implementing first since it exercises the full turn state machine without needing any evaluation logic.
 
-### Medium — one-ply heuristic scoring
+### Medium — one-ply heuristic scoring (implemented 2026-09-06, `js/ai/medium.js`)
 
-For each legal placement, score it along a few concrete dimensions (exact weights are a tuning detail decided during implementation, not fixed here):
+For each legal placement, score it along a few concrete dimensions:
 - Does it grow a corporation the AI already holds significant shares in?
 - Does it push one of the AI's corporations toward secure (11+ sectors)?
 - Does a triggered merger pay the AI a majority/minority bonus (favor these; avoid mergers that mainly benefit the human)?
 - Does founding let the AI claim the founder's free share?
 
 Pick the highest-scoring legal move. The same scoring approach applies to share purchases — prefer consolidating existing positions or buying into safe/growing corporations. No lookahead beyond the immediate move (hence "one-ply").
+
+**Chosen weights** (the "empirical tuning" this doc originally left open — see "Open questions" below): founding scores a flat `5` (a free share is close to a sure thing); growing a held corporation scores `2 + ownShares * 1.5`, plus `2 + ownShares` more if the growth newly crosses the secure threshold; a merger scores `1 + Σ(ownShares in each involved corporation) * 1.5`; an isolated placement scores a baseline `1`. Share purchases score each affordable corporation by `ownShares * 2 + (isSecure ? 3 : 0)` and buy the top scorer up to the per-turn/bank/affordability limit, with no random skipping (unlike easy) — a deliberate tier buys when there's a reasonable candidate. Merger-survivor ties and founding-name choices both prefer the option that best serves the AI's existing position (most-held tied corporation; highest-tier available name). Merger share disposition trades into the survivor when the bank can support a full even split AND the survivor looks like a good hold (secure, or bigger than what's being absorbed), otherwise falls back to easy's sell-everything rule.
+
+**A hard architectural constraint shaped all of this**: `getViewFor()` strips every other player's shares out of the view an AI decision function receives (only `handSize` survives) — so "avoid mergers that mainly benefit the human" literally cannot be evaluated using the human's actual holdings; it's approximated as "favor moves that build my own position," which is the most this tier (or any tier, without changing the privacy architecture) can do with the information actually available.
 
 ### Hard — determinized Monte Carlo Tree Search (MCTS)
 
@@ -46,5 +50,6 @@ The move with the best average simulated outcome (evaluated via credits + share 
 
 ## Open questions for the next design step
 
-- Exact heuristic weights for the medium tier, and simulation count/time budget for the hard tier — both are empirical tuning decisions best made once there's a working game loop to test against.
-- Whether difficulty can be changed mid-game or is fixed for the whole session (default assumption: fixed per game).
+- Simulation count/time budget for the hard tier — an empirical tuning decision best made once that tier is actually being built (medium's weights are resolved; see above).
+- Whether difficulty can be changed mid-game or is fixed for the whole session (default assumption: fixed per game) — still true; `js/ui/main.js`'s `aiDifficulties` map is only ever populated at setup time.
+- The hard tier itself (determinized MCTS) is not yet built — `js/ai/index.js`'s `getAiStrategy()` falls back to easy for `"hard"` in the meantime, and the setup dialog keeps that option disabled.

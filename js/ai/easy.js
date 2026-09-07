@@ -34,22 +34,30 @@ export function choosePlacementAction(view, playerId) {
   return { action: "exchange", sectorId: deadSectorId };
 }
 
-/** Uniformly random pick among corporation names still available to found. */
-export function chooseRandomCorporationToFound(view) {
+/**
+ * Uniformly random pick among corporation names still available to found.
+ * Every AI tier exposes this same (view, playerId) shape — see
+ * js/ai/index.js's getAiStrategy() — even though easy has no use for
+ * playerId here.
+ */
+export function chooseCorporationToFound(view, playerId) {
   return randomItem(getAvailableCorporations(view.corporations)).id;
 }
 
 /** Uniformly random pick among the corporations tied for largest in a merger. */
-export function chooseRandomMergerSurvivor(view) {
+export function chooseMergerSurvivor(view, playerId) {
   return randomItem(view.pendingMerger.candidateSurvivorIds);
 }
 
 /**
  * The easy tier's fixed rule for merger share disposition: sell the entire
  * holding rather than trade or hold ("No judgment needed at this tier" per
- * docs/ai-design.md).
+ * docs/ai-design.md). Takes the same (view, playerId, corporationId,
+ * shareCount) shape as every tier's decideDisposition, even though easy
+ * only needs shareCount — medium's version needs the rest to weigh
+ * trading against selling.
  */
-export function decideSellEverything(shareCount) {
+export function decideDisposition(view, playerId, corporationId, shareCount) {
   return { sell: shareCount, trade: 0, hold: 0 };
 }
 
@@ -62,7 +70,7 @@ export function decideSellEverything(shareCount) {
  * medium/hard tier might split across several, but that's beyond what this
  * stub needs.
  */
-export function chooseRandomShareBuy(view, playerId) {
+export function chooseShareBuy(view, playerId) {
   const player = view.players.find((p) => p.id === playerId);
   const remainingAllowance = MAX_SHARES_PURCHASED_PER_TURN - view.sharesPurchasedThisTurn;
   if (remainingAllowance <= 0) return null;

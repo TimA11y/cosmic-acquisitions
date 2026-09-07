@@ -260,8 +260,9 @@ export function renderMarket(view, humanId, elements, callbacks) {
  * `count - 1` of them) whenever the player-count select changes. Preserves
  * any names/difficulties already entered for rows that still exist, rather
  * than wiping the whole block back to defaults on every count change.
- * Medium/Hard are shown (per docs/ai-design.md's confirmed 3-tier design)
- * but disabled, since only js/ai/easy.js exists so far.
+ * Easy and Medium are both real, selectable tiers (js/ai/easy.js,
+ * js/ai/medium.js); Hard is shown per docs/ai-design.md's confirmed 3-tier
+ * design but stays disabled until the MCTS tier is built.
  */
 export function renderSetupAiRows(count, containerEl) {
   const aiCount = count - 1;
@@ -282,7 +283,7 @@ export function renderSetupAiRows(count, containerEl) {
       <label>Difficulty
         <select class="setup-ai-difficulty">
           <option value="easy">Easy</option>
-          <option value="medium" disabled title="Not implemented yet">Medium (coming soon)</option>
+          <option value="medium">Medium</option>
           <option value="hard" disabled title="Not implemented yet">Hard (coming soon)</option>
         </select>
       </label>
