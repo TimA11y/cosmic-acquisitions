@@ -22,6 +22,49 @@
   }
 }
 
+/* ---------------------------------------------------------------------- */
+
+/* Motion effects (docs/visual-design.md's "glow/glitch/scanline" open      */
+
+/* item). Both hard constraints from that doc apply to everything below:   */
+
+/*   - nothing flashes faster than 3x/second (seizure-risk rule, no        */
+
+/*     exceptions) — every keyframe cycle here runs on the order of        */
+
+/*     seconds, nowhere close;                                             */
+
+/*   - every animation has a prefers-reduced-motion fallback that removes  */
+
+/*     the animation entirely, not just slows it down.                    */
+
+/* ---------------------------------------------------------------------- */
+
+@keyframes title-glow-pulse {
+  0%,
+  100% {
+    text-shadow:
+      0 0 4px var(--color-economy),
+      0 0 10px rgb(77 238 234 / 45%);
+  }
+
+  50% {
+    text-shadow:
+      0 0 8px var(--color-economy),
+      0 0 20px rgb(77 238 234 / 65%);
+  }
+}
+
+@keyframes scanline-drift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 0 12px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -46,6 +89,35 @@ body {
   color: var(--color-text);
   font-family: var(--font-body);
   line-height: 1.5;
+}
+
+/* Subtle CRT-style scanline overlay, drifting slowly downward. A pseudo-
+   element rather than a real DOM node: purely decorative, never enters
+   the accessibility tree at all (stronger than aria-hidden), and
+   pointer-events: none keeps it from ever intercepting a click. Opacity is
+   low enough (~2%) that it doesn't meaningfully affect any text's
+   contrast ratio underneath it — this is atmosphere, not a foreground
+   element. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(238 240 245 / 3%) 0,
+    rgb(238 240 245 / 3%) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: scanline-drift 9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -102,6 +174,7 @@ body {
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
+  box-shadow: 0 0 8px var(--color-focus);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -119,6 +192,19 @@ header h1 {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
   letter-spacing: 0.02em;
+  /* Slow (4s), low-amplitude "neon sign" breathing glow — not a flash;
+     text color itself never changes, only the shadow's blur/opacity, so
+     this doesn't touch the title's own WCAG contrast ratio. */
+  animation: title-glow-pulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  header h1 {
+    animation: none;
+    text-shadow:
+      0 0 4px var(--color-economy),
+      0 0 10px rgb(77 238 234 / 45%);
+  }
 }
 
 #turn-status {
@@ -234,7 +320,10 @@ button {
   border: 1px solid var(--color-text);
   border-radius: 4px;
   cursor: pointer;
-  transition: background var(--transition-fast), opacity var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    opacity var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 /* An inline text link that happens to need JS (scrolling/focusing a spot
@@ -275,6 +364,10 @@ button[aria-disabled="true"] {
 
 button:hover:not([aria-disabled="true"], :disabled) {
   background: var(--color-panel-border);
+  /* Static (non-animated) glow, driven by the existing box-shadow
+     transition already covered by --transition-fast's reduced-motion
+     override above — no separate keyframe/media-query needed here. */
+  box-shadow: 0 0 6px var(--color-text);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -328,17 +421,23 @@ button:hover:not([aria-disabled="true"], :disabled) {
   color: var(--color-text);
   border: 1px solid var(--color-text);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 #star-map td button:hover {
   background: var(--color-panel-border);
+  /* Box-shadow glow itself comes from the general button:hover rule above
+     (this selector doesn't redeclare it) — this override only needs to
+     restore the transition property that :hover would otherwise lose,
+     since `transition` is a single shorthand and the more specific
+     selector above replaces rather than merges it. */
 }
 
 .sector-star {
   /* Decorative only — never the sole indicator of state (see the visually
      hidden text alongside it in each cell). */
   font-style: normal;
+  text-shadow: 0 0 3px currentColor;
 }
 
 .sector-star[aria-hidden="true"] {
