@@ -4,6 +4,28 @@
   contrast-ratio math). Colors are custom properties named by ROLE, not by
   hue, so every rule below reads as "why", not just "what color".
 */
+
+/* Self-hosted display face for headings only (docs/visual-design.md's
+   "distinctive self-hosted angular display face" open item) — body text
+   stays on the system stack below for readability, per that doc's own
+   reasoning. A local relative url(), not a CDN link: keeps the app fully
+   self-contained per R3, works over a plain file:// open (unlike ES
+   modules, @font-face resource loads aren't blocked by the file://
+   same-origin restriction), and needs no separate license-fetch step at
+   runtime. font-display: optional means it's used only if it loads
+   near-instantly (true for a small same-origin local file) and otherwise
+   the fallback stack is used for the whole page load with no later
+   swap — avoiding the FOUT the original system-font choice was written
+   to avoid. Subset to printable ASCII + bold-only instance of the
+   upstream variable font, see fonts/OFL.txt for the license. */
+@font-face {
+  font-family: Orbitron;
+  src: url("../fonts/orbitron-bold-subset.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: optional;
+}
+
 :root {
   --color-bg: #0d0d14;
   --color-text: #eef0f5;
@@ -13,6 +35,7 @@
   --color-focus: #fff;
   --color-panel-border: #33333f;
   --font-body: ui-sans-serif, "Segoe UI", roboto, sans-serif;
+  --font-heading: "Orbitron", var(--font-body);
   --transition-fast: 120ms ease;
 }
 
@@ -89,6 +112,20 @@ body {
   color: var(--color-text);
   font-family: var(--font-body);
   line-height: 1.5;
+}
+
+/* Every heading site-wide gets the display face — not just the page
+   title — since docs/visual-design.md's open item was "headings" in
+   general, not h1 specifically. Body text (paragraphs, buttons, table
+   cells, list items) is untouched, still on --font-body. Orbitron's
+   glyphs are geometric/wide, so a little extra letter-spacing keeps
+   longer headings ("Founding a Corporation") from looking cramped. */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.03em;
 }
 
 /* Subtle CRT-style scanline overlay, drifting slowly downward. A pseudo-
@@ -192,6 +229,7 @@ header h1 {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
   letter-spacing: 0.02em;
+
   /* Slow (4s), low-amplitude "neon sign" breathing glow — not a flash;
      text color itself never changes, only the shadow's blur/opacity, so
      this doesn't touch the title's own WCAG contrast ratio. */
@@ -364,6 +402,7 @@ button[aria-disabled="true"] {
 
 button:hover:not([aria-disabled="true"], :disabled) {
   background: var(--color-panel-border);
+
   /* Static (non-animated) glow, driven by the existing box-shadow
      transition already covered by --transition-fast's reduced-motion
      override above — no separate keyframe/media-query needed here. */
@@ -386,6 +425,7 @@ button:hover:not([aria-disabled="true"], :disabled) {
 #star-map table {
   border-collapse: collapse;
   width: 100%;
+
   /* Still stretches to fill its container on wide viewports (unchanged
      from before), but won't compress cells below their natural 24px
      min-width (R13) when the container is narrower than that — instead
@@ -426,6 +466,7 @@ button:hover:not([aria-disabled="true"], :disabled) {
 
 #star-map td button:hover {
   background: var(--color-panel-border);
+
   /* Box-shadow glow itself comes from the general button:hover rule above
      (this selector doesn't redeclare it) — this override only needs to
      restore the transition property that :hover would otherwise lose,
@@ -437,7 +478,7 @@ button:hover:not([aria-disabled="true"], :disabled) {
   /* Decorative only — never the sole indicator of state (see the visually
      hidden text alongside it in each cell). */
   font-style: normal;
-  text-shadow: 0 0 3px currentColor;
+  text-shadow: 0 0 3px currentcolor;
 }
 
 .sector-star[aria-hidden="true"] {

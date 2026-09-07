@@ -13,7 +13,7 @@ Colors are assigned by **role**, not just picked for looks — this keeps the pa
 
 ## Typography
 
-Angular sans-serif, matching the cyberpunk direction. For `js/ui/`'s first pass, this uses a **system-font stack** (`ui-sans-serif, "Segoe UI", Roboto, sans-serif`) rather than a self-hosted display font — simpler to ship correctly (no font-loading/FOUT concerns) and still keeps the app fully self-contained per R3. A more distinctive self-hosted angular display face (for headings only, keeping body text on the system stack for readability) remains an open polish item, not ruled out.
+Angular sans-serif, matching the cyberpunk direction. Body text (paragraphs, buttons, table cells, list items) stays on the **system-font stack** (`ui-sans-serif, "Segoe UI", Roboto, sans-serif`) for readability. Every heading (`h1`–`h4`, site-wide) uses a self-hosted display face, **Orbitron** (SIL Open Font License — see `fonts/OFL.txt`), a geometric/angular sci-fi face that reads clearly as a distinct "display" tier above body copy. Shipped as `fonts/orbitron-bold-subset.woff2` — a single bold-weight instance of the upstream variable font, subsetted to printable ASCII only, ~6KB. `font-display: optional` means the browser only swaps to it if it loads near-instantly (true for a small same-origin local file); otherwise the fallback stack is used for the whole page load with no later swap, avoiding the FOUT the original system-font-only choice was written to avoid. Confirmed working over a genuine `file://` open (not just through a dev server), since font resource loads — unlike ES module imports — aren't blocked by `file://`'s same-origin restriction.
 
 ## Motion and flashing — accessibility constraints specific to this aesthetic
 
@@ -24,6 +24,7 @@ Cyberpunk UIs commonly lean on glitch effects, scanlines, and pulsing/flickering
 
 ## Open questions for the next design step
 
-- A distinctive self-hosted display typeface for headings (body text should stay on the system stack regardless, for readability).
+None remaining.
 
-Resolved: **glow/glitch/scanline effect treatments**. `css/main.css` now has a slow neon glow pulse on the header title, a static glow on button hover/`:focus-visible`, a tier-colored static glow on Star Map star glyphs, and a `body::before` animated CRT scanline overlay. Glitch effects specifically were left out — harder to keep unambiguously compliant with the no-flashing-over-3x/second rule for no real payoff over glow+scanline. Every animated piece has a verified `prefers-reduced-motion` fallback that removes the animation entirely.
+- **Self-hosted display typeface**: see "Typography" above — Orbitron, self-hosted, headings only.
+- **Glow/glitch/scanline effect treatments**: `css/main.css` now has a slow neon glow pulse on the header title, a static glow on button hover/`:focus-visible`, a tier-colored static glow on Star Map star glyphs, and a `body::before` animated CRT scanline overlay. Glitch effects specifically were left out — harder to keep unambiguously compliant with the no-flashing-over-3x/second rule for no real payoff over glow+scanline. Every animated piece has a verified `prefers-reduced-motion` fallback that removes the animation entirely.

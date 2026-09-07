@@ -30,6 +30,8 @@ npm test             # Cucumber/BDD scenarios via Playwright (bddgen && playwrig
 
 MIT — see [LICENSE](LICENSE).
 
+The self-hosted heading typeface, [Orbitron](https://github.com/google/fonts/tree/main/ofl/orbitron), is separately licensed under the SIL Open Font License — see [fonts/OFL.txt](fonts/OFL.txt). `fonts/orbitron-bold-subset.woff2` is a bold-weight, printable-ASCII-only subset of the original variable font, built to keep the shipped file small.
+
 ## Tech stack
 
 - **Runtime (shipped app):** vanilla JavaScript, HTML, and CSS. No frameworks, no bundler, no build step — the game runs by opening `index.html` (or serving the static files) directly in a browser.
@@ -47,6 +49,9 @@ cosmic_acquisitions/
   index.html          # entry point — open this directly in a browser
   css/
     main.css
+  fonts/
+    orbitron-bold-subset.woff2  # self-hosted heading typeface (OFL-licensed)
+    OFL.txt
   js/
     model/            # pure-function rules engine (js/model/index.js is the public surface)
     ui/               # DOM rendering + event wiring (main.js, render.js, storage.js)
