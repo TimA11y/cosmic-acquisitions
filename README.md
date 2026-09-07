@@ -6,11 +6,25 @@ A turn-based, space-themed variant of Sid Sackson's board game *Acquire*, playab
 
 The player places sector tiles on a shared Star Map, founding, growing, and merging space corporations (a reskin of Acquire's hotel chains). Players buy shares in corporations, and when corporations merge, majority/minority shareholders cash out in Credits. The game is turn-based: one human player competes against one or more AI-controlled players.
 
-This document is a living overview of the project. See [requirements.md](requirements.md) for the detailed, itemized requirements list.
+This document is a living overview of the project. See [requirements.md](requirements.md) for the detailed, itemized requirements list, and [open-questions.md](open-questions.md) for what's still unresolved.
 
 ## Status
 
-Requirements gathering. No code yet.
+**Feature-complete against the core design docs.** The full rules engine, UI, save/resume, in-game help, and all three AI difficulty tiers (including hard-tier determinized MCTS) are implemented and covered by an automated test suite. See [open-questions.md](open-questions.md) for known gaps (mostly visual polish, a couple of empirically-untuned constants, and one known accessibility bug in the Event Log's live region) — nothing left is a missing core feature.
+
+### Playing it
+
+Open `index.html` directly in a browser (double-click it, or use any static file server) — no build step, no server required.
+
+### Running the dev tooling
+
+```
+npm install
+npm run lint        # ESLint over js/**, steps/**
+npm run lint:html    # html-validate over *.html
+npm run lint:css     # Stylelint over css/**
+npm test             # Cucumber/BDD scenarios via Playwright (bddgen && playwright test)
+```
 
 ## License
 
@@ -26,19 +40,28 @@ MIT — see [LICENSE](LICENSE).
   - Cucumber.js + playwright-bdd — BDD tests (Gherkin `.feature` files driving real Playwright browser sessions)
   - `@axe-core/playwright` — automated accessibility testing, run inside the same Playwright/BDD browser sessions
 
-## Project layout (planned)
+## Project layout
 
 ```
-projectx/
-  index.html
+cosmic_acquisitions/
+  index.html          # entry point — open this directly in a browser
   css/
+    main.css
   js/
-  features/        # Cucumber .feature files (Gherkin scenarios)
-  steps/            # Cucumber step definitions (Playwright-driven)
-  docs/             # design reference docs (data model, etc.)
-  package.json      # dev dependencies only
+    model/            # pure-function rules engine (js/model/index.js is the public surface)
+    ui/               # DOM rendering + event wiring (main.js, render.js, storage.js)
+    ai/               # easy/medium/hard AI tiers, dispatched via ai/index.js
+  test/
+    model-harness.html  # loads js/model/ as a real ES module, for BDD tests to drive
+  features/           # Cucumber .feature files (Gherkin scenarios)
+  steps/              # Cucumber step definitions (Playwright-driven)
+  scripts/
+    test-server.mjs   # dependency-free static server used only by the test suite
+  docs/               # design reference docs (data model, UI, AI, persistence, help, visual)
+  package.json        # dev dependencies only — not required to run the shipped game
   README.md
   requirements.md
+  open-questions.md
 ```
 
 ## Design docs
@@ -59,4 +82,4 @@ projectx/
 - **Playable on desktop, tablet, and mobile phone** — responsive layout, touch/mouse/keyboard all supported as first-class input methods.
 - **AI opponents** are core to the design (single human vs. AI players), not an add-on — the game state model needs to support clean AI move evaluation from the start.
 
-See [requirements.md](requirements.md) for the full itemized list, and the game design research summary earlier in this project's history for background on Acquire's mechanics and prior art (existing digital clones, AI approaches).
+See [requirements.md](requirements.md) for the full itemized list, and [open-questions.md](open-questions.md) for what's still unresolved.
