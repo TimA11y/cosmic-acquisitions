@@ -1,6 +1,6 @@
 # Open questions and known issues
 
-A consolidated view across all of `docs/*.md`'s individual "Open questions for the next design step" sections, cross-checked against what's actually implemented as of 2026-09-06 (commit `f8069c1`). The game is feature-complete for its core scope — everything below is either a deliberate, documented limitation, polish, or process work, not a missing core feature.
+A consolidated view across all of `docs/*.md`'s individual "Open questions for the next design step" sections, cross-checked against what's actually implemented as of 2026-09-07 (commit `db57aaf`). The game is feature-complete for its core scope — everything below is either a deliberate, documented limitation, polish, or process work, not a missing core feature.
 
 ## Deliberate, known limitations
 
@@ -9,7 +9,7 @@ A consolidated view across all of `docs/*.md`'s individual "Open questions for t
 
 ## Known bugs
 
-- **Event Log's `aria-live` region over-announces on every update.** Reported behavior: a screen reader re-reads the entire log from the start on each new entry, instead of announcing just the newest message. Root cause: `js/ui/render.js`'s `renderEventLog()` does `listEl.innerHTML = ""` and then re-appends *every* entry in `view.eventLog` on every call — since `render()` runs after every single action, this destroys and rebuilds the whole `<ul id="event-log-list" aria-live="polite">` subtree each time. From the browser/AT's perspective, the entire region's content was just replaced, not incrementally added to, so it announces everything rather than the diff — a well-known ARIA live-region anti-pattern. Fix direction: only append new entries since the last render (e.g. track how many entries have already been rendered, or diff against the previous `eventLog` length) instead of clearing and rebuilding the list every time. This is a real accessibility defect against R10/R11 (screen reader support, WCAG 2.2 AA), not just polish.
+None currently tracked. The previous entry — the Event Log's `aria-live` region over-announcing on every update (`js/ui/render.js`'s `renderEventLog()` clearing and rebuilding the whole `<ul>` on every `render()` call, causing screen readers to re-read the entire log instead of just the newest message) — was fixed in `db57aaf`: `renderEventLog()` now appends only entries beyond `listEl.children.length`, verified live with a `MutationObserver` showing pure-addition mutations across a real placement + AI turn.
 
 ## Visual / UX polish
 
