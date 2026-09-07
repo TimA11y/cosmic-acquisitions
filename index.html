@@ -105,6 +105,25 @@
     </main>
 
     <!--
+      A <footer> as a direct child of <body> (not nested in <article>/
+      <section>/<aside>/<main>) gets the implicit ARIA landmark role
+      "contentinfo" for free — no explicit role="contentinfo" needed, same
+      "prefer real semantic HTML" approach used for the Star Map's real
+      <table> and the native <dialog> elements throughout this file.
+      External links open in a new tab (rel="noopener noreferrer") so
+      following one doesn't abandon an in-progress game — the autosave
+      would recover it anyway (js/ui/storage.js), but there's no reason to
+      interrupt play for a credits link.
+    -->
+    <footer>
+      <p>
+        <a href="https://github.com/TimA11y/cosmic-acquisitions" target="_blank" rel="noopener noreferrer">View source on GitHub</a>
+        · © 2026 Tim Harshbarger ·
+        <a href="https://github.com/TimA11y/cosmic-acquisitions/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+      </p>
+    </footer>
+
+    <!--
       Reachable from any screen/phase (docs/help-design.md) — freely
       dismissible, unlike every other dialog here: reading a reference isn't
       a decision that needs to be intercepted. Each heading below carries a

@@ -210,6 +210,33 @@ body::before {
 
 /* ---------------------------------------------------------------------- */
 
+/* Footer — a visual bookend to header (same border/padding, mirrored).    */
+
+/* Placed before the higher-specificity .skip-links a below so Stylelint's */
+
+/* no-descending-specificity rule (ascending order for overlapping         */
+
+/* properties like color) is satisfied.                                   */
+
+/* ---------------------------------------------------------------------- */
+
+/* Text stays the full-contrast --color-text (not dimmed) so de-emphasis
+   comes from font-size/spacing, not a lower-contrast color that would
+   risk falling below WCAG AA (R11) for the sake of looking "muted". */
+footer {
+  padding: 1rem;
+  border-top: 1px solid var(--color-panel-border);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+footer a {
+  color: var(--color-economy);
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------- */
+
 /* Skip links — standard visually-hidden-until-focused pattern (R10/R11)   */
 
 /* ---------------------------------------------------------------------- */

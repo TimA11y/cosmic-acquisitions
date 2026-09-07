@@ -19,6 +19,10 @@ This describes the screen structure and interaction patterns for Cosmic Acquisit
   <section aria-labelledby="event-log-heading">  <!-- PUBLIC: running history,
                                                        also an aria-live region -->
 </main>
+
+<footer>  <!-- Repo link, author, license — implicit "contentinfo" landmark
+                (no explicit role needed) since it's a direct child of
+                <body>, not nested in <main>/<article>/<section>/<aside>. -->
 ```
 
 Each section has a real visible `<h2>` heading, referenced via `aria-labelledby`, so screen reader users get an accurate landmark/heading list to jump between (e.g. via a screen reader's "jump to heading" navigation) instead of reading the whole page linearly. This structure also directly encodes the public/private split from `docs/data-model.md`: "Your Ship" is the only section holding this player's private data; everything else is public.

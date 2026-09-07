@@ -16,7 +16,17 @@ This document is a living overview of the project. See [requirements.md](require
 
 ### Playing it
 
-Open `index.html` directly in a browser (double-click it, or use any static file server) — no build step, no server required.
+Open `index.html` directly in a browser (double-click it) — no build step, no server required.
+
+If you'd rather serve it over `http://` (e.g. to test with browser devtools that behave differently on `file://` URLs), any static file server works from the project root:
+
+```
+npx serve .          # then open the URL it prints (defaults to http://localhost:3000)
+```
+
+```
+python -m http.server 8000    # then open http://localhost:8000
+```
 
 ### Running the dev tooling
 
