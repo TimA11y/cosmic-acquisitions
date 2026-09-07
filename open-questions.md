@@ -1,10 +1,10 @@
 # Open questions and known issues
 
-A consolidated view across all of `docs/*.md`'s individual "Open questions for the next design step" sections, cross-checked against what's actually implemented as of 2026-09-07 (commit `61b90cd`, plus the CI workflow not yet committed). The game is feature-complete for its core scope — everything below is either a deliberate, documented limitation, polish, or process work, not a missing core feature.
+A consolidated view across all of `docs/*.md`'s individual "Open questions for the next design step" sections, cross-checked against what's actually implemented as of 2026-09-07 (commit `51711aa`). The game is feature-complete for its core scope — every category below is currently empty.
 
 ## Deliberate, known limitations
 
-- **Hard AI's MCTS budget is an untuned first pass.** `js/ai/hard.js` uses `TOTAL_TIME_BUDGET_MS = 400`, `DETERMINIZATION_COUNT = 5`, `MAX_ROLLOUT_PLIES = 6` — reasonable starting values, not validated against real play. Worth revisiting if the tier feels too weak or turns feel slow. (`docs/ai-design.md`)
+None currently tracked.
 
 ## Known bugs
 
@@ -22,8 +22,6 @@ None remaining. All four are resolved:
 ## Process
 
 None remaining. ~~No CI workflow.~~ **Fixed.** `.github/workflows/ci.yml` runs on every push/PR to `main`: `npm ci`, all three linters (`lint`, `lint:css`, `lint:html`), then the full BDD suite (`npm test`, chromium-only per `playwright.config.js`). The repo now has a real GitHub remote (`github.com/TimA11y/cosmic-acquisitions`) for this to actually run against. Every step verified locally first, matching the exact command sequence the workflow runs.
-
-With this, every category above is fully resolved except one deliberate, documented limitation (the MCTS budget). The project has no remaining open items beyond that.
 
 ## Documentation hygiene (cosmetic, not functional)
 
