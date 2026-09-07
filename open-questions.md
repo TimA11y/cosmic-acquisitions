@@ -23,7 +23,4 @@ None currently tracked. The previous entry — the Event Log's `aria-live` regio
 
 ## Documentation hygiene (cosmetic, not functional)
 
-`docs/ui-design.md`, `docs/persistence-design.md`, and `docs/visual-design.md` were all cleaned up 2026-09-07 (their "Open questions" sections now correctly state what's resolved and how, instead of listing stale questions). Two remain:
-
-- **`docs/file-layout.md`** — asks whether `js/ui/`/`js/ai/` need their own file-layout pass (they were built without one, making the question moot) and what the test-harness page should look like (`test/model-harness.html` answers this).
-- **`docs/game-engine-api.md`** — asks about `js/model/` file layout (resolved, matches `js/model/`'s actual files exactly) and exact `eventLog` event types/messages (resolved — see `game.js`'s `appendEvent()` call sites).
+None remaining. Every `docs/*.md`'s "Open questions" section was cleaned up as of 2026-09-07 — each now correctly states what's resolved and how, instead of listing stale questions that were actually answered during implementation.

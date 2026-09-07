@@ -25,5 +25,7 @@ Since `requirements.md` R8 commits to running *all* BDD scenarios as real Playwr
 
 ## Open questions for the next design step
 
-- Whether `js/ui/` and `js/ai/` get a similarly detailed file-layout pass, or are decided incrementally during implementation.
-- The exact shape of the test-harness page mentioned above.
+None remaining. Both are resolved:
+
+- **`js/ui/`/`js/ai/` file layout**: decided incrementally during implementation, not given a dedicated pass — `js/ui/` ended up as `main.js`/`render.js`/`storage.js`, `js/ai/` as `index.js`/`easy.js`/`medium.js`/`hard.js`.
+- **Test-harness page shape**: `test/model-harness.html` is exactly as predicted above — a minimal page whose only job is loading `js/model/index.js` as a real `<script type="module">` and exposing it as `window.CosmicModel` for Playwright's `page.evaluate()` to call through.

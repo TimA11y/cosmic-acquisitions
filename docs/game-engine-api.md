@@ -157,5 +157,7 @@ function endGame(gameState, playerId) { ... }
 
 ## Open questions for the next design step
 
-- File layout under `js/model/` — likely one file per concern (`board.js`, `corporations.js`, `players.js`, `bank.js`, `merger.js`, `game.js`) plus an `index.js` or similar that re-exports the public API.
-- Exact event types/messages recorded to `eventLog` for each transition.
+None remaining. Both are resolved:
+
+- **File layout under `js/model/`**: see `docs/file-layout.md` — matches this prediction exactly, plus `constants.js`, `placement.js`, and `persistence.js` that turned out to be worth splitting out on their own.
+- **`eventLog` event types**: `game.js`'s `appendEvent()` call sites use 8 types — `placement`, `growth`, `founding`, `merger`, `sharesPurchased`, `turnEnded`, `deadTileExchanged`, `liquidation` — each paired with a human-readable `message` string (what the Event Log UI actually displays) and a `turnNumber`.
