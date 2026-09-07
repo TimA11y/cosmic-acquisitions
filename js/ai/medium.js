@@ -8,11 +8,15 @@
 // (grow > isolated, founding is strong, consolidate existing positions)
 // rather than precisely tuned against real play data.
 //
-// Every scoring function here can only see the acting AI's OWN shares —
-// getViewFor() strips every other player's holdings down to handSize, so
-// docs/ai-design.md's "avoid mergers that mainly benefit the human" can
-// only be approximated as "favor moves that build my own position"; there
-// is no information available to do better than that, by design.
+// Every scoring function here only weighs the acting AI's OWN shares —
+// docs/ai-design.md's "avoid mergers that mainly benefit the human" is
+// approximated as "favor moves that build my own position" rather than
+// actually inspecting what the human holds. Note this is a scope choice for
+// this tier, not an information-hiding constraint: opponents' shares/credits
+// are legitimately public (see docs/data-model.md, revised 2026-09-06 while
+// building the hard tier) and visible in the view this function receives —
+// medium just doesn't look, since a real relative-holdings comparison would
+// be more lookahead/complexity than a one-ply heuristic is meant to have.
 
 import {
   getLegalPlacements,

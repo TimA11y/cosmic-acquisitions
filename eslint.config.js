@@ -40,7 +40,7 @@ export default [
       globals: globals.browser,
     },
     rules: {
-      "no-unused-vars": ["error", { args: "none" }],
+      "no-unused-vars": ["error", { args: "none", ignoreRestSiblings: true }],
     },
   },
   {

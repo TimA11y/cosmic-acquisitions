@@ -90,13 +90,13 @@ The top-level object:
 
 ## Public vs. private information
 
-This model deliberately separates public state (`board`, `corporations`, `bank`, `eventLog`) from private per-player state (`hand`, `shares`, `credits`).
+Revised 2026-09-06 while building the hard AI tier: the only thing in this model that's genuinely undiscoverable is **hand contents** (which specific tiles a player holds) and the **bank's sector pool order** (which tile comes next). Everything else — including each player's cumulative `shares` and `credits` — turns out to be public *in effect*, even though it isn't displayed as a running total anywhere: every purchase, founder's free share, merger bonus, and sell/trade/hold split is announced via the event log, and starting credits are public knowledge, so a perfect-memory observer could reconstruct exact totals for any player from public information alone. Treating those totals as "private" was an oversimplification of the original design; `getViewFor()` no longer hides them.
 
-**Important limitation:** this is a single browser tab with no server — there's no real process boundary, so "private" isn't cryptographically secret; a player could inspect the AI's hand via devtools. What we enforce instead is **architectural discipline**:
+**Important limitation:** this is a single browser tab with no server — there's no real process boundary, so even hand contents aren't cryptographically secret; a player could inspect the AI's hand via devtools. What we enforce instead is **architectural discipline**:
 
-- `getViewFor(gameState, playerId)` returns a redacted copy of `gameState`: all public fields unchanged, plus *that player's own* `hand`/`shares`/`credits`, with every other player's private fields stripped down to just counts (e.g. `handSize: 6` instead of the actual tile ids).
+- `getViewFor(gameState, playerId)` returns a redacted copy of `gameState`: all public fields unchanged (now including every player's `shares`/`credits`, per the above), the requesting player's own `hand` included in full, and every other player's `hand` replaced with just `handSize`. `bank.sectorPool` is likewise replaced with `bank.sectorPoolSize` — its contents are the other thing that's genuinely hidden, not just undisplayed.
 - The human-facing UI renders **only** through `getViewFor` — never the raw `gameState`.
-- AI move-selection logic is only ever given `getViewFor(gameState, aiPlayerId)` — never the raw state. This keeps the AI honest (it can't reason over information it wouldn't legitimately have) even though nothing stops a determined player from reading memory directly.
+- AI move-selection logic is only ever given `getViewFor(gameState, aiPlayerId)` — never the raw state. This keeps the AI honest (it can't reason over hand contents or the real draw order, which it wouldn't legitimately know) even though nothing stops a determined player from reading memory directly.
 
 If true hidden-information enforcement ever became important, the stronger option would be running AI logic inside a Web Worker for real memory isolation from the main thread. Not needed for this project's scope (single human vs. local AI), but noted here as the escalation path if requirements change.
 

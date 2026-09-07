@@ -576,24 +576,30 @@ export function endGame(gameState, playerId) {
 /**
  * Redacted copy of gameState for a given player — the ONLY view the UI and
  * the AI are allowed to read from (see docs/data-model.md's "Public vs.
- * private information" section). Public fields (board, corporations, bank,
- * eventLog) pass through unchanged; the requesting player's own hand/
- * shares/credits are included in full; every OTHER player's hand/shares/
- * credits are removed entirely and replaced with just handSize, since
- * per docs/data-model.md even cumulative holdings and cash totals — not
- * just hand contents — are private, not merely hidden-in-detail.
+ * private information" section). Two redactions:
+ *
+ * - Every OTHER player's `hand` is removed and replaced with just
+ *   `handSize` — hand CONTENTS are the one thing nobody could ever
+ *   legitimately know. `shares` and `credits`, by contrast, are exposed for
+ *   every player (not just the requester): every change to either is
+ *   already publicly event-logged (a purchase, a founder's free share, a
+ *   merger bonus, a sell/trade/hold split), and starting credits are public
+ *   knowledge, so a perfect-memory observer could reconstruct the exact
+ *   running totals from public information alone. This isn't a leak — it's
+ *   skipping a derivation whose outcome is already provably knowable.
+ * - `bank.sectorPool` (the exact hidden draw order) is replaced with
+ *   `sectorPoolSize` — this one genuinely can't be reconstructed from
+ *   anything public, unlike shares/credits above.
  */
 export function getViewFor(gameState, playerId) {
+  const { sectorPool, ...bankWithoutPool } = gameState.bank;
   return {
     ...gameState,
+    bank: { ...bankWithoutPool, sectorPoolSize: sectorPool.length },
     players: gameState.players.map((player) => {
       if (player.id === playerId) return player;
-      return {
-        id: player.id,
-        name: player.name,
-        isHuman: player.isHuman,
-        handSize: player.hand.length,
-      };
+      const { hand, ...playerWithoutHand } = player;
+      return { ...playerWithoutHand, handSize: hand.length };
     }),
   };
 }

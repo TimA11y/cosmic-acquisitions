@@ -495,9 +495,13 @@ function maybeStartAiTurn() {
   setTimeout(() => runAiTurn(currentPlayer.id), AI_TURN_DELAY_MS);
 }
 
-function runAiTurn(aiPlayerId) {
+// async because the hard tier's choosePlacementAction() runs a time-boxed
+// search that yields periodically (see js/ai/hard.js) — awaiting easy/
+// medium's plain synchronous return values here is a harmless no-op, so
+// this one signature works uniformly across every tier.
+async function runAiTurn(aiPlayerId) {
   const strategy = getAiStrategy(aiDifficulties[aiPlayerId]);
-  const placementAction = strategy.choosePlacementAction(getViewFor(gameState, aiPlayerId), aiPlayerId);
+  const placementAction = await strategy.choosePlacementAction(getViewFor(gameState, aiPlayerId), aiPlayerId);
 
   try {
     if (placementAction.action === "exchange") {
