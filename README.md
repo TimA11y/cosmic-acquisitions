@@ -1,5 +1,7 @@
 # Cosmic Acquisitions
 
+[![CI](https://github.com/TimA11y/cosmic-acquisitions/actions/workflows/ci.yml/badge.svg)](https://github.com/TimA11y/cosmic-acquisitions/actions/workflows/ci.yml)
+
 A turn-based, space-themed variant of Sid Sackson's board game *Acquire*, playable in a browser against AI opponents.
 
 ## What this is

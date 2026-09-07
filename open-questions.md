@@ -1,6 +1,6 @@
 # Open questions and known issues
 
-A consolidated view across all of `docs/*.md`'s individual "Open questions for the next design step" sections, cross-checked against what's actually implemented as of 2026-09-07 (commit `21b8317`, plus the self-hosted typeface work not yet committed). The game is feature-complete for its core scope — everything below is either a deliberate, documented limitation, polish, or process work, not a missing core feature.
+A consolidated view across all of `docs/*.md`'s individual "Open questions for the next design step" sections, cross-checked against what's actually implemented as of 2026-09-07 (commit `61b90cd`, plus the CI workflow not yet committed). The game is feature-complete for its core scope — everything below is either a deliberate, documented limitation, polish, or process work, not a missing core feature.
 
 ## Deliberate, known limitations
 
@@ -21,7 +21,9 @@ None remaining. All four are resolved:
 
 ## Process
 
-- **No CI workflow.** `npm test`/`npm run lint` only run locally today; there's no GitHub Actions (or equivalent) config running them automatically.
+None remaining. ~~No CI workflow.~~ **Fixed.** `.github/workflows/ci.yml` runs on every push/PR to `main`: `npm ci`, all three linters (`lint`, `lint:css`, `lint:html`), then the full BDD suite (`npm test`, chromium-only per `playwright.config.js`). The repo now has a real GitHub remote (`github.com/TimA11y/cosmic-acquisitions`) for this to actually run against. Every step verified locally first, matching the exact command sequence the workflow runs.
+
+With this, every category above is fully resolved except one deliberate, documented limitation (the MCTS budget). The project has no remaining open items beyond that.
 
 ## Documentation hygiene (cosmetic, not functional)
 
